@@ -1,0 +1,30 @@
+{
+	// Cloudflare bindings for the log CMS.
+	// Local dev uses Miniflare emulation (no remote resources needed).
+	// Before first deploy: run `wrangler d1 create sui-sari-log` and paste the
+	// returned database_id below, and `wrangler r2 bucket create sui-sari-log-media`.
+	"name": "sui-sari",
+	"compatibility_date": "2025-03-01",
+	"compatibility_flags": ["nodejs_compat"],
+	// No plaintext credentials here — local dev values live in .dev.vars
+	// (gitignored). Production requires:
+	//   wrangler secret put EDITOR_PASSWORD
+	//   wrangler secret put STRIPE_SECRET_KEY
+	//   wrangler secret put STRIPE_WEBHOOK_SECRET
+	// Without EDITOR_PASSWORD auth fails closed; without STRIPE_SECRET_KEY
+	// checkout returns 503 (mock mode needs an explicit SHOP_MOCK=1 var).
+	"d1_databases": [
+		{
+			"binding": "DB",
+			"database_name": "sui-sari-log",
+			"database_id": "REPLACE_WITH_REAL_ID_BEFORE_DEPLOY",
+			"migrations_dir": "migrations"
+		}
+	],
+	"r2_buckets": [
+		{
+			"binding": "BUCKET",
+			"bucket_name": "sui-sari-log-media"
+		}
+	]
+}

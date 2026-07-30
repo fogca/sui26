@@ -1,0 +1,220 @@
+@charset "UTF-8";
+
+
+@font-face {
+    font-family: 'Univers';
+    src: url('../font/Univers.woff2');
+}
+
+@font-face {
+    font-family: 'UniversM';
+    src: url('../font/Univers-Medium.woff2');
+}
+
+@font-face {
+    font-family: 'AvusM';
+    src: url('../font/Avus W00 Medium.woff2');
+}
+
+@font-face {
+    font-family: 'AvusR';
+    src: url('../font/Avus W00 Regular.woff2');
+}
+
+
+
+:root {
+    --padding: 1.8rem;
+    --pcPadding: 4vw;
+    --backgroundColor: rgb(251, 251, 250);
+    --textColor: #484848;
+    --blackColor: #121212;
+    --footerColor: #e9e7e6;
+    /* secondary text: dates, captions, muted labels */
+    --subColor: #999;
+    /* light-on-dark body text */
+    --bodyColor: var(--backgroundColor);
+}
+
+
+* {
+	margin: 0;
+	padding: 0;
+	box-sizing: border-box;
+}
+
+html {font-size: 62.5%;}
+html, body {
+    width: 100vw;
+    overflow-x: hidden;
+    background-color: var(--backgroundColor);
+    scroll-behavior: smooth;
+}
+
+
+
+div, h1, h2, h3, h4, h5, h6, p, a, span, input, button, tspan {
+    font-family: "neue-haas-unica", TsukuGoPr5-M, TsukuGoPro-M, sans-serif;
+    font-weight: 400;
+    color: var(--textColor);
+    font-display: swap;
+    font-feature-settings: "palt";
+    letter-spacing: -0.015em;
+    -webkit-font-smoothing: antialiased;
+    line-height: 1.6;
+}
+
+html.wf-loading body {
+    visibility: hidden;
+  }
+
+
+:lang(en),
+:lang(en) * {
+    font-family: "garamond-premier-pro-display", "adobe-jenson-pro", "AvusR", "acumin-variable", "neue-haas-grotesk-text", sans-serif;
+    letter-spacing: 0.05em;
+}
+svg, svg path, svg g {fill: var(--textColor);}
+
+
+/* Latin: Garamond Premier Pro Display (priority) -> Adobe Jenson Pro (fallback),
+   both served 300-weight only from Typekit kit yia1qxv. JP fallback: Tsukushi A Old Mincho */
+.serif {
+    font-family: "garamond-premier-pro-display", "adobe-jenson-pro", "fot-tsukuaoldmin-pr6n", serif;
+    font-weight: 300;
+    font-style: normal;
+    letter-spacing: 0.05em;
+}
+
+p {
+    font-weight: 400;
+    line-height: 1.7;
+    font-size: 1.3rem;
+    text-align: justify;
+    word-wrap: break-word;
+    hyphens: auto;
+    word-break: break-word;
+}
+p:lang(en) {
+    line-height: 1.4;
+}
+
+.h0 {
+    font-size: 2.4rem;
+    line-height: 1.2;
+}
+h1, .h1 {font-size: 2.0rem;}
+h2, .h2 {font-size: 1.6rem;}
+h3, .h3 {font-size: 1.4rem;}
+h4, .h4 {font-size: 1.2rem;}
+h5, .h5 {font-size: 1.05rem;}
+h6, .h6 {font-size: .9rem;}
+.h7 {font-size: .8rem;}
+
+.sp {display: block;}
+.pc {display: none;}
+
+
+.bold {
+    font-family: "AvusM", "acumin-variable", TsukuGoPr5-B, TsukuGoPro-B, sans-serif;
+}
+
+li {
+    text-decoration: none;
+    list-style: none;
+}
+a {
+    text-decoration: none;
+    display: inline-block;
+    transition: .75s ease-in-out;
+}
+a:hover {opacity: .65;}
+
+section {
+    padding-left: var(--padding);
+    padding-right: var(--padding);
+}
+img {
+    width: 100%;
+    height: auto;
+    object-fit: cover;
+    object-position: 50%;
+}
+
+input {
+    background-color: transparent;
+    border: none;
+    outline: none;
+}
+input::placeholder {
+    color: var(--textColor);
+    opacity: .25;
+}
+button {
+    background-color: transparent;
+    border: none;
+    outline: none;
+}
+
+
+
+
+
+.white {color: var(--bodyColor);}
+.gray {color: var(--subColor);}
+ul li {text-decoration: none;list-style: none;}
+.flex {display: flex; justify-content: center; align-items: center;}
+
+.w100 {
+    width: 100vw;
+    margin-left: calc(-1 * var(--padding));
+}
+
+
+main {margin: auto;}
+
+
+@media screen and (min-width: 720px) {
+    html {font-size: 62.5%;}
+    .h0 {font-size: 3.6rem;}
+h1, .h1 {font-size: 2.0rem;}
+h2, .h2 {font-size: 1.8rem;}
+h3, .h3 {font-size: 1.6rem;}
+h4, .h4 {font-size: 1.4rem;}
+h5, .h5 {font-size: 1.2rem;}
+h6, .h6 {font-size: 1.1rem;}
+.h7 {font-size: 1.0rem;}
+p, .p {
+    font-size: 1.35rem;
+    line-height: 2.0;
+    text-align: left;
+}
+.sp {display: none;}
+.pc {display: block;}
+
+section {
+    padding-left: var(--pcPadding);
+    padding-right: var(--pcPadding);
+}
+
+
+.w100 {
+    width: 100vw;
+    margin-left: calc(-1 * var(--pcPadding));
+}
+
+
+
+}
+
+@media only screen and (min-width: 481px) and (max-width: 720px) {
+    html {font-size: 50%;}
+}
+  
+@media only screen and (min-device-width: 481px) and (max-device-width: 1024px) and (orientation:portrait) {
+        /* For portrait layouts only */
+}
+
+
+
+
