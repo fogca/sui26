@@ -1,26 +1,88 @@
 <!doctype html>
-<html lang="ja">
+<html lang="%lang%">
 	<head>
 		<meta charset="utf-8" />
 		<link rel="icon" href="%sveltekit.assets%/favicon.png" />
-		<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-
 		<link rel="icon" href="/favicon.ico" />
 		<link rel="apple-touch-icon" href="/icons/apple-touch-icon.png" />
+		<!-- viewport-fit=cover lets the page background run behind the iOS Safari
+		     toolbars; fixed UI near an edge must pad with env(safe-area-inset-*). -->
+		<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+
 		<meta property="og:title" content="SUI scent studio" />
 		<meta property="og:description" content="蕊 SUI scent studio" />
 		<meta property="og:image" content="/ogp.png" />
 
+		<!-- Language, decided before first paint (same idea as Dev/OTIF, adapted
+		     to this site's /en URLs so each language stays linkable).
+		     Only the bare Japanese entry point auto-redirects, and only when the
+		     visitor has expressed no choice this session and their browser is not
+		     Japanese. An explicit pick (sessionStorage) always wins, so switching
+		     to 日本語 never bounces back to English. -->
 		<script>
-			(function(d) {
-			  var config = {
-				kitId: 'gvd7tzu',
-				scriptTimeout: 3000,
-				async: true
-			  },
-			  h=d.documentElement,t=setTimeout(function(){h.className=h.className.replace(/\bwf-loading\b/g,"")+" wf-inactive";},config.scriptTimeout),tk=d.createElement("script"),f=false,s=d.getElementsByTagName("script")[0],a;h.className+=" wf-loading";tk.src='https://use.typekit.net/'+config.kitId+'.js';tk.async=true;tk.onload=tk.onreadystatechange=function(){a=this.readyState;if(f||a&&a!="complete"&&a!="loaded")return;f=true;clearTimeout(t);try{Typekit.load(config)}catch(e){}};s.parentNode.insertBefore(tk,s)
-			})(document);
-		  </script>
+			try {
+				var p = location.pathname;
+				var picked = sessionStorage.getItem('sui-lang');
+				var isEnPath = p === '/en' || p.indexOf('/en/') === 0;
+				if (picked === 'en' && !isEnPath && (p === '/' || p === '')) {
+					location.replace('/en');
+				} else if (
+					!picked &&
+					(p === '/' || p === '') &&
+					!(navigator.language || '').toLowerCase().startsWith('ja')
+				) {
+					location.replace('/en');
+				}
+			} catch (e) {}
+		</script>
+
+		<!-- The opening curtain on the home page plays once per tab session. The
+		     flag has to be set before first paint, or a returning reader sees the
+		     curtain painted and then snatched away. -->
+		<script>
+			try {
+				if (sessionStorage.getItem('sui-op') === '1') {
+					document.documentElement.dataset.opSeen = '1';
+				}
+			} catch (e) {}
+		</script>
+
+		<!-- Fonts are wired the same way as Dev/OTIF, which this project follows:
+		     every loader sits here in <head> so it starts before first paint and
+		     survives SPA navigation, and nothing gates the page on them.
+
+		     Order matters: preconnect, then the stylesheets, then the loaders. -->
+		<link rel="preconnect" href="https://use.typekit.net" crossorigin />
+		<link rel="preconnect" href="https://p.typekit.net" crossorigin />
+		<link rel="preconnect" href="https://typesquare.com" />
+		<link rel="preconnect" href="https://wf.typesquare.com" crossorigin />
+
+		<!-- Ango is self-hosted, so it can start downloading before the CSS that
+		     references it has even been parsed. -->
+		<link
+			rel="preload"
+			as="font"
+			type="font/woff2"
+			href="%sveltekit.assets%/font/Ango-VF25.woff2"
+			crossorigin
+		/>
+		<!-- base.css cache-bust: bump ?v= on every base.css edit -->
+		<link rel="stylesheet" href="%sveltekit.assets%/css/base.css?v=20261006a" />
+		<!-- the "II" direction, scoped to .ii — the root layout puts that class on
+		     the public pages only, so the back office keeps admin.css.
+		     Loaded after base.css: several of its rules win on order, not weight. -->
+		<link rel="stylesheet" href="%sveltekit.assets%/css/ii.css?v=20261006e" />
+		<!-- Adobe Fonts (Garamond Premier Pro / Jenson / Neue Haas Unica) -->
+		<link rel="stylesheet" href="https://use.typekit.net/yia1qxv.css" />
+
+		<!-- TypeSquare — Akashi webfont loader. No defer/async: unlike FontPlus,
+		     TypeSquare does not document them as supported, and deferring it is
+		     what made the Japanese text visibly reflow after paint. -->
+		<script
+			type="text/javascript"
+			src="//typesquare.com/3/tsst/script/ja/typesquare.js?6437b4e1a9cc4f6db5233ebbac1e02e5"
+			charset="utf-8"
+		></script>
 
 		%sveltekit.head%
 	</head>

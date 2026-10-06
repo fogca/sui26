@@ -1,13 +1,19 @@
 <script>
+    import { page } from '$app/stores'
     import Logo from "../components/Logo.svelte"
     import Symbol from "../components/Symbol.svelte"
     import Menu from "../components/Menu.svelte"
+    import { localizePath } from '$lib/i18n.js'
+
+    // the logo must return the reader to the home page in THEIR language,
+    // not drop an English visitor onto the Japanese site
+    $: home = localizePath('/', $page.data?.lang ?? 'ja')
 </script>
 
 <header>
 
-    <a href="/"><Symbol /></a>
-    <a href="/" class="Logo"><Logo /></a>
+    <a href={home}><Symbol /></a>
+    <a href={home} class="Logo"><Logo /></a>
     <Menu />
 
 </header>

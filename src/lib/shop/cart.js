@@ -18,6 +18,10 @@ function load() {
 
 export const cart = writable(load());
 export const cartOpen = writable(false);
+/** Set by CartDrawer while it is on the page. The site chrome uses it to decide
+ *  whether the cart control can open the drawer or has to send the reader to
+ *  the shop first. */
+export const cartDrawerMounted = writable(false);
 
 cart.subscribe((items) => {
 	if (typeof localStorage !== 'undefined') {

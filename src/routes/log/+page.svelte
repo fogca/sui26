@@ -1,97 +1,138 @@
 <script>
-	import Header from '../../components/Header.svelte';
+	// log — index, in the "II" direction. Same surface and mark chrome as the
+	// About frame; the entry list is a column of hairline-separated rows, each
+	// a small 4:5 plate, the date as a label and the Japanese title beside it.
+	//
+	// Presentation only: the load contract, the keyed each block, the empty
+	// state and the English-only "Japanese entries" notice are untouched.
+	import Photo from '$lib/ii/Photo.svelte';
+	import Chrome from '$lib/ii/Chrome.svelte';
+	import Foot from '$lib/ii/Foot.svelte';
+	import { page } from '$app/stores';
+	import { translator, localizePath, splitLang } from '$lib/i18n.js';
 	export let data;
+
+	const SITE = 'https://sui-sari.hi-843.workers.dev';
+
+	$: t = translator(data.lang);
+	$: path = (q) => localizePath(q, data.lang);
+	$: jaPath = splitLang($page.url.pathname).path;
+	$: enPath = localizePath(jaPath, 'en');
 </script>
 
 <svelte:head>
-	<title>log — SUI scent studio</title>
+	<title>{t('log.title')} — {t('common.siteName')}</title>
+	<link rel="alternate" hreflang="ja" href="{SITE}{jaPath}" />
+	<link rel="alternate" hreflang="en" href="{SITE}{enPath}" />
 </svelte:head>
 
-<Header />
+<div class="ii-page">
+	<div class="ii-surface">
+		<Photo sp={{ w: 2.2723, x: 0, y: 0 }} pc={{ w: 1.5, x: 0, y: 0 }} />
+	</div>
+	<Chrome variant="inner" tone="ink" />
 
-<section class="log-index">
-	<div class="wrapper">
-		<h1 class="index-title serif">log</h1>
+	<main class="ii-main">
+		<h1 class="ii-display" lang="en">{t('log.title')}</h1>
 
-		<ul class="post-list">
+		{#if data.lang === 'en' && data.posts.length}
+			<p class="ii-body note" lang="en">{t('log.jaOnlyIndex')}</p>
+		{/if}
+
+		<ul class="list">
 			{#each data.posts as post (post.slug)}
-				<li class="post-row">
-					<a href="/log/{post.slug}">
+				<li class="row">
+					<a href={path(`/log/${post.slug}`)}>
 						{#if post.cover}
 							<div class="thumb"><img src={post.cover} alt="" /></div>
 						{/if}
 						<div class="meta">
-							<time class="date">{post.date}</time>
-							<span class="title serif">{post.title}</span>
+							<time class="ii-label date">{post.date}</time>
+							<!-- entry titles are written in Japanese only -->
+							<span class="title" lang="ja">{post.title}</span>
 						</div>
 					</a>
 				</li>
 			{/each}
 		</ul>
-	</div>
-</section>
+
+		{#if data.posts.length === 0}
+			<p class="ii-body empty" lang={data.lang}>{t('log.empty')}</p>
+		{/if}
+	</main>
+
+	<Foot />
+</div>
 
 <style>
-	.log-index {
-		min-height: 100vh;
-		min-height: 100dvh;
-		padding-top: 22vh;
-		padding-bottom: 10rem;
-	}
-	.wrapper {
-		margin-left: 30%;
-	}
-	.index-title {
-		font-size: 2rem;
-		letter-spacing: 0.05em;
-		margin-bottom: 4rem;
+	h1 {
+		margin-bottom: 44px;
 	}
 
-	.post-list {
-		display: flex;
-		flex-direction: column;
-		gap: 2.8rem;
+	/* note shown above the Japanese-only entry list on the English page */
+	.note {
+		margin-top: -22px;
+		margin-bottom: 40px;
+		color: var(--ii-mute);
 	}
-	.post-row a {
-		display: flex;
-		align-items: baseline;
-		gap: 1.4rem;
-		width: 100%;
+	.empty {
+		color: var(--ii-mute);
+	}
+
+	.row {
+		border-top: 1px solid var(--ii-rule-soft);
+	}
+	.row:last-child {
+		border-bottom: 1px solid var(--ii-rule-soft);
+	}
+	/* the plate column is held open whether or not the entry has a cover, so
+	   the dates stay on one line down the list */
+	.row a {
+		display: grid;
+		grid-template-columns: 64px minmax(0, 1fr);
+		gap: 0 16px;
+		align-items: start;
+		padding: 18px 0;
 	}
 	.thumb {
-		width: 6rem;
-		flex: 0 0 auto;
-		align-self: flex-start;
+		aspect-ratio: 4 / 5;
+		overflow: hidden;
 	}
 	.thumb img {
 		width: 100%;
-		height: 7.2rem;
+		height: 100%;
 		object-fit: cover;
 	}
 	.meta {
-		display: flex;
-		flex-direction: column;
-		gap: 0.4rem;
+		grid-column: 2;
 	}
 	.date {
-		font-size: 1rem;
-		color: var(--subColor);
-		letter-spacing: 0.03em;
+		display: block;
 	}
 	.title {
-		font-size: 1.5rem;
-		line-height: 1.4;
+		display: block;
+		margin-top: 8px;
+		font-size: 13px;
 	}
 
 	@media screen and (min-width: 720px) {
-		.log-index {
-			padding-top: 30vh;
+		h1 {
+			margin-bottom: 64px;
 		}
-		.wrapper {
-			margin-left: 52.5%;
+		.note {
+			margin-top: -32px;
+			margin-bottom: 56px;
+		}
+		.list {
+			max-width: 640px;
+		}
+		.row a {
+			grid-template-columns: 88px minmax(0, 1fr);
+			gap: 0 24px;
+			padding: 24px 0;
 		}
 		.title {
-			font-size: 1.6rem;
+			font-size: 15px;
 		}
 	}
 </style>

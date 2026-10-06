@@ -1,43 +1,56 @@
 <script>
 	import { cart, cartOpen } from '$lib/shop/cart.js';
+	import { page } from '$app/stores';
+	import { translator } from '$lib/i18n.js';
 	$: count = $cart.reduce((s, i) => s + i.qty, 0);
+	$: t = translator($page.data?.lang ?? 'ja');
 </script>
 
-<button class="cart-btn serif" on:click={() => cartOpen.set(true)} aria-label="カートを開く">
-	Cart{#if count > 0}<span class="count">{count}</span>{/if}
+<!-- "Cart" is English-only in both languages, so it carries lang="en" -->
+<button class="cart-btn" lang="en" on:click={() => cartOpen.set(true)} aria-label={t('shop.openCart')}>
+	<span class="word">{t('common.cart')}</span>{#if count > 0}<span class="count">{count}</span>{/if}
 </button>
 
 <style>
+	/* bottom-right: the top-right corner belongs to the site chrome. A hairline
+	   box on white, because the control floats over the page's own copy.
+	   The size is set here rather than by .ii-body: `.ii button` is (0,1,1) and
+	   would outrank a bare utility class. */
 	.cart-btn {
-		/* bottom-right: top-right is owned by the site Menu (Header.svelte) */
 		position: fixed;
-		bottom: calc(2rem + env(safe-area-inset-bottom));
-		right: var(--padding);
+		bottom: calc(20px + env(safe-area-inset-bottom));
+		right: var(--ii-gutter);
 		z-index: 40;
-		font-size: 1.15rem;
-		letter-spacing: 0.05em;
-		color: var(--textColor);
+		display: flex;
+		align-items: baseline;
+		gap: 9px;
+		padding: 11px 15px;
+		border: 1px solid var(--ii-rule);
+		background: var(--ii-bg, #fff);
+		color: var(--ii-ink);
+		font-size: 12px;
+		line-height: 1.2;
 		cursor: pointer;
-		display: flex;
-		align-items: center;
-		gap: 0.5rem;
+		transition: background 0.6s ease, color 0.6s ease, border-color 0.6s ease;
 	}
-	.count {
-		min-width: 1.8rem;
-		height: 1.8rem;
-		border-radius: 50%;
-		background: var(--blackColor);
+	.cart-btn:hover {
+		background: var(--ii-ink);
 		color: #fff;
-		font-size: 0.95rem;
-		display: flex;
-		align-items: center;
-		justify-content: center;
+		border-color: var(--ii-ink);
+	}
+	/* a plain number set beside the word — this direction has no filled shapes */
+	.count {
+		font-size: 10px;
 	}
 
 	@media screen and (min-width: 720px) {
 		.cart-btn {
-			bottom: 3.5rem;
-			right: var(--pcPadding);
+			bottom: 32px;
+			padding: 12px 17px;
+			font-size: 13px;
+		}
+		.count {
+			font-size: 11px;
 		}
 	}
 </style>

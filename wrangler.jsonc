@@ -1,11 +1,16 @@
 {
 	// Cloudflare bindings for the log CMS.
 	// Local dev uses Miniflare emulation (no remote resources needed).
-	// Before first deploy: run `wrangler d1 create sui-sari-log` and paste the
-	// returned database_id below, and `wrangler r2 bucket create sui-sari-log-media`.
+	// Production D1 (sui-sari-log) and R2 (sui-sari-log-media) created 2026-07-30.
 	"name": "sui-sari",
 	"compatibility_date": "2025-03-01",
 	"compatibility_flags": ["nodejs_compat"],
+	// adapter-cloudflare's build output: a self-contained Worker + static assets
+	"main": ".svelte-kit/cloudflare/_worker.js",
+	"assets": {
+		"directory": ".svelte-kit/cloudflare",
+		"binding": "ASSETS"
+	},
 	// No plaintext credentials here — local dev values live in .dev.vars
 	// (gitignored). Production requires:
 	//   wrangler secret put EDITOR_PASSWORD
@@ -17,7 +22,7 @@
 		{
 			"binding": "DB",
 			"database_name": "sui-sari-log",
-			"database_id": "REPLACE_WITH_REAL_ID_BEFORE_DEPLOY",
+			"database_id": "e9a02939-a0f2-4d6d-aea1-4c27f541b05f",
 			"migrations_dir": "migrations"
 		}
 	],

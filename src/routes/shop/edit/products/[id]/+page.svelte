@@ -1,61 +1,106 @@
 <script>
-	import EditorHead from '$lib/log/EditorHead.svelte';
+	import AdminShell from '$lib/admin/AdminShell.svelte';
+	import ConfirmButton from '$lib/admin/ConfirmButton.svelte';
 	import ProductForm from '$lib/shop/ProductForm.svelte';
-	import { enhance } from '$app/forms';
+	import { yen } from '$lib/shop/money.js';
+	import { NOUN, itemStatusLabel } from '$lib/shop/vocab.js';
+
 	export let data;
 	export let form;
+
+	const stamp = new Intl.DateTimeFormat('sv-SE', {
+		timeZone: 'Asia/Tokyo',
+		year: 'numeric',
+		month: '2-digit',
+		day: '2-digit',
+		hour: '2-digit',
+		minute: '2-digit'
+	});
+
+	$: product = data.product;
+
+	// "?created=1" only announces the arrival, so it is read once and retired as
+	// soon as the owner saves — two success notices at a time would be noise.
+	let created = data.created;
+	$: updated = product.updated_at ? stamp.format(new Date(product.updated_at)) : '';
+	$: subtitle = [
+		itemStatusLabel(product.status),
+		`/shop/${product.slug}`,
+		yen(product.price),
+		updated ? `最終更新 ${updated}` : ''
+	]
+		.filter(Boolean)
+		.join(' · ');
 </script>
 
-<EditorHead />
-<svelte:head><title>{data.product.name} — 商品編集</title></svelte:head>
+<AdminShell title={product.name} section="products" {subtitle}>
+	<span class="hd-actions" slot="actions">
+		{#if product.status === 'published'}
+			<a class="a-btn" href="/shop/{product.slug}" target="_blank" rel="noopener">公開ページを見る ↗</a>
+		{/if}
+		<a class="a-btn" href="/shop/edit/products">← 一覧へ</a>
+	</span>
 
-<section class="wrap">
-	<div class="head">
-		<h1 class="serif">商品を編集</h1>
-		<a class="view" href="/shop/{data.product.slug}" target="_blank">商品ページを見る ↗</a>
+	{#if created}
+		<p class="created" role="status">{NOUN.item}を作成しました。続けて内容を編集できます。</p>
+	{/if}
+
+	<ProductForm
+		{product}
+		{form}
+		action="?/save"
+		categories={data.categories}
+		onSaved={() => (created = false)}
+	/>
+
+	<div class="danger">
+		<h2 class="serif">危険な操作</h2>
+		<p class="desc">
+			この{NOUN.item}を完全に削除します。取り消せません。オーダー履歴に残った{NOUN.item}名や金額はそのままですが、公開ページは
+			404 になります。アップロード済みの画像はストレージに残ります。
+		</p>
+		<form method="POST" action="?/delete">
+			<ConfirmButton
+				tone="danger"
+				label="この{NOUN.item}を削除"
+				message={`「${product.name}」を削除します。この操作は取り消せません。よろしいですか？`}
+			/>
+		</form>
 	</div>
-
-	<ProductForm product={data.product} {form} />
-
-	<form
-		method="POST"
-		action="?/delete"
-		use:enhance={({ cancel }) => {
-			if (!confirm('この商品を削除しますか？')) cancel();
-		}}
-		class="danger-zone">
-		<button type="submit">商品を削除</button>
-	</form>
-</section>
+</AdminShell>
 
 <style>
-	.wrap {
-		max-width: 56rem;
-		margin: 0 auto;
-		padding: calc(8vh + env(safe-area-inset-top)) var(--padding) 8rem;
+	/* keep both buttons as flex items of the shell's own .actions row */
+	.hd-actions {
+		display: contents;
 	}
-	.head {
-		display: flex;
-		justify-content: space-between;
-		align-items: baseline;
-		margin-bottom: 2.8rem;
+	.created {
+		margin-bottom: 2.4rem;
+		padding: 1rem 1.4rem;
+		border: 1px solid #d5e0d7;
+		border-radius: 3px;
+		background-color: #f7faf7;
+		font-size: 1.1rem;
+		line-height: 1.6;
+		text-align: left;
+		color: #4d6b57;
 	}
-	h1 {
-		font-size: 1.8rem;
-		letter-spacing: 0.05em;
-	}
-	.view {
-		font-size: 1.05rem;
-		color: var(--subColor);
-	}
-	.danger-zone {
-		margin-top: 4rem;
+	.danger {
+		margin-top: 5.6rem;
+		padding-top: 2.8rem;
 		border-top: 1px solid #eee;
-		padding-top: 2rem;
 	}
-	.danger-zone button {
-		color: #c0392b;
+	h2 {
+		font-size: 1.4rem;
+		line-height: 1.4;
+		color: var(--blackColor);
+	}
+	.desc {
+		margin: 0.8rem 0 1.8rem;
+		max-width: 56rem;
 		font-size: 1.05rem;
-		cursor: pointer;
+		line-height: 1.8;
+		text-align: left;
+		color: var(--subColor);
 	}
 </style>

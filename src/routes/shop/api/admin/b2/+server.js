@@ -1,9 +1,21 @@
-import { listOrders, getSettings } from '$lib/shop/store.js';
+import { listOrders, listOrdersByIds, getSettings } from '$lib/shop/store.js';
 
 // Yamato B2 Cloud import CSV — official "基本レイアウト" (columns 1-42 of the
-// data-exchange spec). Unshipped (paid) orders only. 送り状種類 0 = 発払い.
+// data-exchange spec). 送り状種類 0 = 発払い.
+// Without ?ids, every unshipped (paid) order is exported. With ?ids=a,b,c only
+// those orders are, exactly as picked on the 受注 screen — no status filter, so
+// what the owner selected is what lands in the file.
 // Served as UTF-8 with BOM; if B2 shows mojibake, open in Excel and re-save
 // as .xlsx before importing (B2 accepts xlsx and sidesteps encoding).
+
+// Enough for any realistic batch; keeps a hand-typed URL from fanning out.
+const MAX_IDS = 500;
+
+// ?format= names the export layout. Only the Yamato B2 layout exists today;
+// the parameter is here so a second one (e.g. another carrier's import CSV)
+// can be added without changing this endpoint's URL or callers.
+const FORMATS = ['b2'];
+const DEFAULT_FORMAT = 'b2';
 
 const HEADERS = [
 	'お客様管理番号', '送り状種類', 'クール区分', '伝票番号', '出荷予定日',
@@ -34,9 +46,28 @@ function todaySlash() {
 		.replaceAll('-', '/');
 }
 
-export async function GET({ platform }) {
+export async function GET({ platform, url }) {
 	const db = platform.env.DB;
-	const [orders, settings] = await Promise.all([listOrders(db, 'paid'), getSettings(db)]);
+	const format = url.searchParams.get('format') ?? DEFAULT_FORMAT;
+	if (!FORMATS.includes(format)) {
+		return new Response(`unsupported format: ${format}`, { status: 400 });
+	}
+	// The presence of `ids` — not its contents — decides the mode, so a malformed
+	// "?ids=" yields an empty file rather than silently dumping every open order.
+	const raw = url.searchParams.get('ids');
+	const ids =
+		raw === null
+			? null
+			: raw
+					.split(',')
+					.map((s) => s.trim())
+					.filter(Boolean)
+					.slice(0, MAX_IDS);
+
+	const [orders, settings] = await Promise.all([
+		ids ? listOrdersByIds(db, ids) : listOrders(db, 'paid'),
+		getSettings(db)
+	]);
 	const ship = todaySlash();
 
 	const rows = orders.map((o) => {
@@ -72,10 +103,12 @@ export async function GET({ platform }) {
 
 	const csv = '﻿' + [HEADERS.join(','), ...rows].join('\r\n') + '\r\n';
 	const stamp = todaySlash().replaceAll('/', '');
+	// a selected batch gets its own filename so two downloads never collide
+	const name = ids ? `b2_${stamp}_sel${rows.length}.csv` : `b2_${stamp}.csv`;
 	return new Response(csv, {
 		headers: {
 			'Content-Type': 'text/csv; charset=utf-8',
-			'Content-Disposition': `attachment; filename="b2_${stamp}.csv"`
+			'Content-Disposition': `attachment; filename="${name}"`
 		}
 	});
 }

@@ -13,5 +13,24 @@ export const works = [
 	{ image: '/images/sari.jpg', text: 'SUI scent by Sari' }
 ];
 
-export const contactHref =
-	'mailto:hello@sari-scent.jp?subject=SUI scent studioへのお問い合わせ&body=SUI scent studioにご興味を持っていただきありがとうございます。%0A%0ASUIでは、香りにまつわるプロダクトのディレクションや製作を行っております。%0A以下より情報をご入力いただきお送りください。%0A新たなコラボレーションを楽しみにしております。%0A%0Aご氏名：%0Aメールアドレス：%0A問い合わせ内容：';
+const CONTACT_TO = 'hello@sari-scent.jp';
+
+const CONTACT_BODY = {
+	ja: {
+		subject: 'SUI scent studioへのお問い合わせ',
+		body: 'SUI scent studioにご興味を持っていただきありがとうございます。\n\nSUIでは、香りにまつわるプロダクトのディレクションや製作を行っております。\n以下より情報をご入力いただきお送りください。\n新たなコラボレーションを楽しみにしております。\n\nご氏名：\nメールアドレス：\nお問い合わせ内容：'
+	},
+	en: {
+		subject: 'Enquiry — SUI scent studio',
+		body: 'Thank you for your interest in SUI scent studio.\n\nWe direct and create scent-related products and hold scent gatherings.\nPlease fill in the details below and send this message.\nWe look forward to new collaborations.\n\nName:\nEmail:\nYour enquiry:'
+	}
+};
+
+/** mailto: link with the draft written in the reader's language. */
+export function contactMailto(lang) {
+	const c = CONTACT_BODY[lang === 'en' ? 'en' : 'ja'];
+	return `mailto:${CONTACT_TO}?subject=${encodeURIComponent(c.subject)}&body=${encodeURIComponent(c.body)}`;
+}
+
+/** Japanese default, kept for callers that have no language in scope. */
+export const contactHref = contactMailto('ja');

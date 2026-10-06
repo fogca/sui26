@@ -1,0 +1,456 @@
+@charset "UTF-8";
+
+/* ---------------------------------------------------------------------------
+   SUI — "II" design direction, site-wide
+   Figma: II-ii (UEy0lKKtgP8jN4x2DWZUOB) — 128:260 Op / 128:264 Top /
+   128:284 About, all measured at the 393pt SP artboard.
+
+   Scoped to `.ii`, which the root layout puts on the public pages only. The
+   back office (/shop/edit, /log/edit, /log/new, /log/login) stays outside it
+   and keeps admin.css.
+
+   Sizes are in px, not rem: base.css sets html{font-size:50%} between 481 and
+   720px, which would silently shrink this whole direction by a fifth on
+   tablets.
+
+   Palette and scale, straight from the frames:
+     ink   #536774   display, body, JP copy
+     pale  #e9f0f5   type over the photograph
+     Ango  Thin 250 throughout, tracking 0.02em at every size
+     JP    tracking 0.05em, line-height 1.8
+     scale 28 / 20 / 12 / 11 / 6.4
+--------------------------------------------------------------------------- */
+
+/* Ango-VF17 (then still called Elio; 2026-09-30) now draws the half-width yen sign (U+00A5) itself,
+   so the stack's own per-character fallback picks it straight from Ango —
+   this rule no longer fires for U+00A5 and could be dropped for it. Kept
+   for U+FFE5 (the fullwidth twin), which Ango still doesn't draw, mapping
+   it to the system gothic that sets the Japanese rather than falling
+   through to a serif Garamond ¥ against Ango digits. The rest of Ango's
+   gaps (’ “ ” ! ? & @ # % /) still fall through to Garamond, which is where
+   English punctuation belongs. If no local face matches, the stack behaves
+   exactly as before. VF18-21 refine outlines, add "endash", and widen
+   every glyph's advance width by 5 units (2026-10-02); none of them touch
+   U+00A5/U+FFE5. Verified with fontTools against
+   static/font/Ango-VF25.woff2. */
+@font-face {
+	font-family: "IIYen";
+	src: local("Hiragino Sans"), local("HiraginoSans-W3"), local("Hiragino Kaku Gothic ProN W3"),
+		local("Yu Gothic Medium"), local("YuGothic-Medium"), local("Noto Sans JP"),
+		local("Noto Sans CJK JP");
+	unicode-range: U+00A5, U+FFE5;
+	font-display: swap;
+}
+
+.ii {
+	--ii-ink: #536774;
+	--ii-ink-deep: #2f3d47;
+	--ii-pale: #e9f0f5;
+	--ii-bg: #ffffff;
+	--ii-rule: rgba(83, 103, 116, 0.28);
+	--ii-rule-soft: rgba(83, 103, 116, 0.14);
+	--ii-mute: rgba(83, 103, 116, 0.62);
+	--ii-alert: #9a6b2f;
+
+	/* Ango, held to a single weight: Thin 250 everywhere (2026-10-06).
+	   Both tokens stay so the scale can be split again by changing one line;
+	   they simply resolve to the same stop for now. Ango-VF25 names 250 "Thin"
+	   on a wght axis of 150-950. */
+	--ii-thin: 250;
+	--ii-light: 250;
+	--ii-track: 0.02em;
+
+	/* The stack for a Japanese run — and Ango leads it deliberately. A run
+	   marked lang="ja" is very often mixed: product names (es - your skin -,
+	   Drei 3 - forest), sizes (6ml), collaborator credits (HERMES skills
+	   academy), the Latin half of 沙里 SARI. With the Japanese face first,
+	   every one of those set in the Japanese face's Latin instead of the
+	   direction's own. Ango first means only kana and kanji fall through.
+	   Akashi (Morisawa, via the TypeSquare loader in app.html) carries them;
+	   a Mincho stands in if it has not arrived. */
+	--ii-jp: "Ango", "IIYen", "Akashi", "fot-tsukuaoldmin-pr6n",
+		"Hiragino Mincho ProN", "Yu Mincho", serif;
+	--ii-jp-track: 0.05em;
+
+	/* 21 / 393 */
+	--ii-gutter: 5.34vw;
+
+	position: relative;
+	min-height: 100vh;
+	min-height: 100dvh;
+	background: var(--ii-bg);
+	color: var(--ii-ink);
+	font-family: "Ango", "IIYen", "garamond-premier-pro-display", serif;
+	font-weight: var(--ii-light);
+	font-size: 12px;
+	letter-spacing: var(--ii-track);
+	-webkit-font-smoothing: antialiased;
+}
+
+/* base.css styles bare elements (0,0,1) and both `:lang(ja) *` and
+   `:lang(en) *` at (0,1,0). `.ii *` matches that specificity and ii.css is
+   loaded after base.css, so it wins on order. */
+.ii * {
+	font-family: "Ango", "IIYen", "garamond-premier-pro-display", serif;
+	/* base.css sets `div, h1..h6, p, a, span, input, button, tspan { font-weight:
+	   400 }` at (0,0,1), which lands on every element in here — so an element
+	   without one of the .ii-* classes sat a step heavier, and anything
+	   inheriting through a plain <div> did too. (0,1,0) neutralises it while
+	   still losing to every .ii .ii-* at (0,2,0). */
+	font-weight: inherit;
+	letter-spacing: var(--ii-track);
+	color: inherit;
+	font-feature-settings: normal;
+	line-height: inherit;
+}
+
+/* Japanese runs keep the gothic and its own metrics. (0,2,0) beats the
+   `:lang(en) [lang='ja']` pair in base.css on order. */
+.ii [lang="ja"],
+.ii [lang="ja"] * {
+	font-family: var(--ii-jp);
+	letter-spacing: var(--ii-jp-track);
+	line-height: 1.8;
+	/* A run marked lang="ja" is usually mixed, and Ango leads --ii-jp, so this
+	   weight lands on the Latin inside it — product names, sizes, credits.
+	   It never reached Akashi: that is one cut on the TypeSquare contract
+	   (fonts[id]=1202) and browsers only ever synthesise heavier, never
+	   lighter. Measured identical at 250 and 400. So it follows the Latin. */
+	font-weight: var(--ii-thin);
+	font-feature-settings: normal;
+}
+
+/* Only what base.css's `p` rule has to lose. Size and leading must NOT be set
+   here: `.ii p` is (0,1,1) and would outrank .ii-body / .ii-jp at (0,1,0),
+   quietly collapsing the whole type scale to the wrapper's size. Classless
+   paragraphs get the inherited values through a selector that cannot. */
+.ii p {
+	text-align: left;
+	hyphens: none;
+}
+.ii p:not([class]) {
+	font-size: inherit;
+	line-height: inherit;
+}
+.ii a {
+	display: inline;
+	color: inherit;
+	text-decoration: none;
+	transition: opacity 0.7s ease;
+}
+.ii a:hover {
+	opacity: 0.55;
+}
+.ii ul,
+.ii ol {
+	list-style: none;
+}
+.ii img {
+	display: block;
+}
+/* base.css sets `main { margin: auto }`, which on a flex column centres main
+   at its content width and pulls the whole page off its gutter. */
+.ii main {
+	width: 100%;
+	margin: 0;
+}
+/* base.css puts its own padding on every <section>. */
+.ii section {
+	padding-left: 0;
+	padding-right: 0;
+}
+/* TypeSquare's loader writes an inline `font-family: ts-unused` onto every
+   form control, which no stylesheet rule can outrank — so the direction's
+   fields rendered in the browser's default face. The loader is in app.html for
+   the back office, which still sets Akashi; the public pages no longer use it
+   at all, so !important here is the narrow fix rather than unpicking the
+   loader. (Verified: computed font-family was "ts-unused" before this.) */
+.ii input,
+.ii textarea,
+.ii select,
+.ii button {
+	font-family: "Ango", "IIYen", "garamond-premier-pro-display", serif !important;
+	font-size: inherit;
+	/* base.css sets `input, button { font-weight: 400 }` at (0,0,1); form
+	   controls do not inherit weight on their own, so they sat a step heavier
+	   than every other word on the page. */
+	font-weight: inherit;
+	line-height: inherit;
+	background: transparent;
+	border: none;
+	border-radius: 0;
+	outline: none;
+	color: inherit;
+	-webkit-appearance: none;
+	appearance: none;
+}
+.ii svg,
+.ii svg path,
+.ii svg g {
+	fill: currentColor;
+}
+
+/* ------------------------------------------------------------------ type -- */
+
+.ii .ii-display {
+	font-weight: var(--ii-thin);
+	font-size: 28px;
+	line-height: 1.2;
+}
+.ii .ii-lead {
+	font-weight: var(--ii-light);
+	font-size: 20px;
+	line-height: 1.2;
+}
+.ii .ii-body {
+	font-weight: var(--ii-light);
+	font-size: 12px;
+	line-height: 1.2;
+}
+.ii .ii-jp {
+	font-size: 11px;
+	line-height: 1.8;
+}
+.ii .ii-micro {
+	font-weight: var(--ii-light);
+	font-size: 6.4px;
+	line-height: 1.2;
+}
+/* a label that has to be read, rather than the frame's decorative 6.4px */
+.ii .ii-label {
+	font-weight: var(--ii-light);
+	font-size: 10px;
+	line-height: 1.4;
+	letter-spacing: 0.06em;
+	color: var(--ii-mute);
+}
+.ii .ii-thin {
+	font-weight: var(--ii-thin);
+}
+.ii .ii-light {
+	font-weight: var(--ii-light);
+}
+.ii .ii-over {
+	color: var(--ii-pale);
+}
+.ii .ii-mute {
+	color: var(--ii-mute);
+}
+
+/* base.css keeps `.serif` rules up at (0,3,0) — `:lang(en) [lang='ja'] .serif`
+   — which outranks the `.ii [lang="ja"] *` pair. Match that weight so a
+   `.serif` element inside the direction still gets the direction's stack
+   (ii.css is loaded after base.css, so an equal-weight rule wins). */
+.ii [lang="ja"] .serif,
+.ii [lang="ja"].serif,
+.ii .serif[lang="ja"] {
+	font-family: var(--ii-jp);
+}
+
+/* ------------------------------------------------------------ furniture -- */
+
+.ii .ii-page {
+	position: relative;
+	min-height: 100vh;
+	min-height: 100dvh;
+	display: flex;
+	flex-direction: column;
+	background: var(--ii-bg);
+}
+/* Inner pages open below the chrome. The redrawn frames put the display line
+   at 141 on a 720 artboard. */
+.ii .ii-main {
+	position: relative;
+	z-index: 1;
+	flex: 1;
+	padding: 141px var(--ii-gutter) 0;
+}
+.ii .ii-measure {
+	max-width: 348px;
+}
+
+.ii .ii-rule {
+	height: 1px;
+	background: var(--ii-rule);
+	border: 0;
+}
+
+/* Hairline box — add to cart, checkout, submit. */
+.ii .ii-btn {
+	display: block;
+	width: 100%;
+	font-weight: var(--ii-light);
+	padding: 18px 0;
+	border: 1px solid var(--ii-ink);
+	font-size: 11px;
+	line-height: 1.8;
+	text-align: center;
+	cursor: pointer;
+	transition: background 0.5s ease, color 0.5s ease, opacity 0.5s ease;
+}
+.ii .ii-btn:hover {
+	background: var(--ii-ink);
+	color: #fff;
+	opacity: 1;
+}
+.ii .ii-btn:disabled {
+	opacity: 0.35;
+	cursor: default;
+}
+.ii .ii-btn:disabled:hover {
+	background: transparent;
+	color: inherit;
+}
+
+/* Underlined field — contact form, quantity, anything typed into. */
+.ii .ii-field {
+	display: block;
+}
+.ii .ii-field > span {
+	display: block;
+	margin-bottom: 8px;
+	color: var(--ii-mute);
+}
+.ii .ii-field input,
+.ii .ii-field select,
+.ii .ii-field textarea {
+	width: 100%;
+	padding: 8px 0;
+	border-bottom: 1px solid var(--ii-rule);
+	font-size: 13px;
+	line-height: 1.6;
+	transition: border-color 0.4s ease;
+}
+.ii .ii-field textarea {
+	resize: vertical;
+}
+.ii .ii-field input:focus,
+.ii .ii-field select:focus,
+.ii .ii-field textarea:focus {
+	border-bottom-color: var(--ii-ink);
+}
+/* a hairline caret, since the native control is chrome this direction has no
+   room for */
+.ii .ii-caret {
+	background-image: linear-gradient(45deg, transparent 50%, var(--ii-mute) 50%),
+		linear-gradient(135deg, var(--ii-mute) 50%, transparent 50%);
+	background-position: right 5px top 1.05em, right 1px top 1.05em;
+	background-size: 4px 4px, 4px 4px;
+	background-repeat: no-repeat;
+	padding-right: 16px;
+}
+
+/* ------------------------------------------------------------ photograph -- */
+
+/* One 1200x1800 source serves every page. Each frame is a different window
+   onto it, so the crop is expressed the way Figma expresses it: an image box
+   sized and offset in multiples of the viewport width, which keeps the exact
+   composition at any screen size. `cover` is the fallback where a literal
+   window would be wrong for the aspect (wide screens). */
+.ii .ii-photo {
+	position: absolute;
+	inset: 0;
+	overflow: hidden;
+	background: #dfeceb;
+	pointer-events: none;
+}
+.ii .ii-photo img {
+	max-width: none;
+	object-fit: cover;
+}
+.ii .ii-photo.sp-bleed img {
+	position: absolute;
+	left: calc(var(--sp-x) * 100vw);
+	top: calc(var(--sp-y) * 100vw);
+	width: calc(var(--sp-w) * 100vw);
+	height: auto;
+}
+.ii .ii-photo.sp-cover img {
+	position: absolute;
+	inset: 0;
+	width: 100%;
+	height: 100%;
+	object-position: var(--sp-pos, 50% 50%);
+}
+.ii .ii-photo .veil {
+	position: absolute;
+	inset: 0;
+	background: linear-gradient(180deg, rgba(20, 40, 45, 0.3), rgba(20, 40, 45, 0));
+	pointer-events: none;
+}
+
+/* The About frame's surface is the pale corner of the photograph, which only
+   holds for the height of that one frame. On a page that scrolls further the
+   window keeps travelling into the leaf and ink type ends up on mid-green, so
+   the field is bounded: full strength for the frame's own height, then washed
+   out to white over the next two thirds. */
+.ii .ii-surface {
+	position: absolute;
+	top: 0;
+	left: 0;
+	right: 0;
+	height: 170vh;
+	overflow: hidden;
+	pointer-events: none;
+	z-index: 0;
+}
+.ii .ii-surface::after {
+	content: "";
+	position: absolute;
+	left: 0;
+	right: 0;
+	bottom: 0;
+	height: 70vh;
+	background: linear-gradient(180deg, rgba(255, 255, 255, 0) 0%, #fff 82%);
+}
+
+/* --------------------------------------------------------------- desktop -- */
+
+@media screen and (min-width: 720px) {
+	.ii {
+		/* the SP gutter would run to 77px at 1440; hold it near the frame's feel */
+		--ii-gutter: 4.4vw;
+		font-size: 13px;
+	}
+	.ii .ii-display {
+		font-size: 44px;
+	}
+	.ii .ii-lead {
+		font-size: 30px;
+	}
+	.ii .ii-body {
+		font-size: 13px;
+	}
+	.ii .ii-jp {
+		font-size: 12.5px;
+	}
+	.ii .ii-micro {
+		font-size: 8px;
+	}
+	.ii .ii-label {
+		font-size: 11px;
+	}
+	.ii .ii-main {
+		padding-top: 22vh;
+	}
+	.ii .ii-measure {
+		max-width: 46ch;
+	}
+
+	.ii .ii-photo.pc-bleed img {
+		position: absolute;
+		left: calc(var(--pc-x) * 100vw);
+		top: calc(var(--pc-y) * 100vw);
+		width: calc(var(--pc-w) * 100vw);
+		height: auto;
+	}
+	.ii .ii-photo.pc-cover img {
+		position: absolute;
+		inset: 0;
+		left: 0;
+		top: 0;
+		width: 100%;
+		height: 100%;
+		object-position: var(--pc-pos, 50% 50%);
+	}
+}

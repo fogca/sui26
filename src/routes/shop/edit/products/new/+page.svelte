@@ -1,26 +1,18 @@
 <script>
-	import EditorHead from '$lib/log/EditorHead.svelte';
+	import AdminShell from '$lib/admin/AdminShell.svelte';
 	import ProductForm from '$lib/shop/ProductForm.svelte';
+	import { NOUN } from '$lib/shop/vocab.js';
+
+	export let data;
 	export let form;
 </script>
 
-<EditorHead />
-<svelte:head><title>新規商品 — Shop</title></svelte:head>
+<AdminShell
+	title="{NOUN.item}を作成"
+	section="products"
+	subtitle="下書きのまま保存して、あとから公開できます。"
+>
+	<a class="a-btn" slot="actions" href="/shop/edit/products">← 一覧へ</a>
 
-<section class="wrap">
-	<h1 class="serif">新規商品</h1>
-	<ProductForm {form} />
-</section>
-
-<style>
-	.wrap {
-		max-width: 56rem;
-		margin: 0 auto;
-		padding: calc(8vh + env(safe-area-inset-top)) var(--padding) 8rem;
-	}
-	h1 {
-		font-size: 1.8rem;
-		letter-spacing: 0.05em;
-		margin-bottom: 2.8rem;
-	}
-</style>
+	<ProductForm {form} categories={data.categories} />
+</AdminShell>

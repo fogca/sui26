@@ -1,97 +1,140 @@
 <script>
-	import Header from '../../../components/Header.svelte';
+	// 特定商取引法に基づく表記 — the statutory notice, rendered from the shop
+	// settings. The disclosure itself is never translated: on the English page
+	// the heading and the notice above it are English, then the Japanese
+	// original stands as a sub-heading with the rows beneath it in Japanese.
+	import Photo from '$lib/ii/Photo.svelte';
+	import Chrome from '$lib/ii/Chrome.svelte';
+	import Foot from '$lib/ii/Foot.svelte';
+	import { page } from '$app/stores';
+	import { translator, localizePath, splitLang } from '$lib/i18n.js';
+
+	export let data;
+
+	const SITE = 'https://sui-sari.hi-843.workers.dev';
+
+	$: rows = data.rows;
+	$: t = translator(data.lang);
+	$: path = (q) => localizePath(q, data.lang);
+	$: jaPath = splitLang($page.url.pathname).path;
+	$: enPath = localizePath(jaPath, 'en');
 </script>
 
-<svelte:head><title>特定商取引法に基づく表記 — SUI scent studio</title></svelte:head>
+<svelte:head>
+	<title>{t('shop.legal')} — {t('common.siteName')}</title>
+	<link rel="alternate" hreflang="ja" href="{SITE}{jaPath}" />
+	<link rel="alternate" hreflang="en" href="{SITE}{enPath}" />
+</svelte:head>
 
-<Header />
-
-<section class="legal">
-	<div class="wrapper">
-		<h1 class="serif">特定商取引法に基づく表記</h1>
-
-		<!-- TODO: 沙里さん確定情報に差し替えてから公開すること -->
-		<dl>
-			<dt>販売事業者</dt>
-			<dd>SUI scent studio（仮 — 要確定）</dd>
-			<dt>運営責任者</dt>
-			<dd>（要確定）</dd>
-			<dt>所在地・電話番号</dt>
-			<dd>ご請求があった場合、遅滞なく開示いたします。</dd>
-			<dt>メールアドレス</dt>
-			<dd>hello@sari-scent.jp</dd>
-			<dt>販売価格</dt>
-			<dd>各商品ページに税込価格で表示しています。</dd>
-			<dt>商品代金以外の必要料金</dt>
-			<dd>送料（全国一律。一定金額以上のご注文で無料。金額はカート画面に表示）</dd>
-			<dt>お支払い方法</dt>
-			<dd>クレジットカード / Apple Pay / コンビニ決済 / PayPay</dd>
-			<dt>お支払い時期</dt>
-			<dd>ご注文時にお支払いが確定します。コンビニ決済はお支払い期限内にお支払いください。</dd>
-			<dt>商品の引き渡し時期</dt>
-			<dd>ご注文確認後、5営業日以内に発送いたします。</dd>
-			<dt>返品・交換</dt>
-			<dd>
-				香りの性質上、お客様都合による返品はお受けしておりません。<br />
-				不良・破損の場合は商品到着後7日以内にご連絡ください。送料当方負担でお取り替えいたします。
-			</dd>
-		</dl>
-
-		<a class="back" href="/shop">← Shopへ戻る</a>
+<div class="ii-page">
+	<div class="ii-surface">
+		<Photo sp={{ w: 2.2723, x: 0, y: 0 }} pc={{ w: 1.5, x: 0, y: 0 }} />
 	</div>
-</section>
+	<Chrome variant="inner" tone="ink" />
+
+	<main class="ii-main">
+		{#if data.lang === 'en'}
+			<h1 class="ii-display title" lang="en">{t('shop.legal')}</h1>
+			<p class="ii-body notice" lang="en">{t('legal.jaNotice')}</p>
+			<!-- The statutory notice is a legal disclosure: the Japanese original is
+			     always shown, never an English rendering of it. -->
+			<h2 class="ii-lead ja-title" lang="ja">特定商取引法に基づく表記</h2>
+		{:else}
+			<h1 class="ii-display title" lang="ja">特定商取引法に基づく表記</h1>
+		{/if}
+
+		{#if rows.length}
+			<dl class="rows" lang="ja">
+				{#each rows as row (row.label)}
+					<div class="row">
+						<dt class="ii-label">{row.label}</dt>
+						<dd class="ii-jp">{row.value}</dd>
+					</div>
+				{/each}
+			</dl>
+		{:else}
+			<p class="ii-body preparing" lang={data.lang}>{t('legal.preparing')}</p>
+		{/if}
+
+		<a class="ii-body back" href={path('/shop')} lang={data.lang}>{t('shop.backToShop')}</a>
+	</main>
+
+	<!-- the footer's legal link would point at this page -->
+	<Foot legal={false} />
+</div>
 
 <style>
-	.legal {
-		min-height: 100vh;
-		min-height: 100dvh;
-		padding-top: 22vh;
-		padding-bottom: 10rem;
+	/* The statutory title is a long sentence in both languages, so the display
+	   line is given a measure and allowed to fall onto two or three lines
+	   rather than run the width of the page. */
+	.title {
+		max-width: 348px;
 	}
-	.wrapper {
-		margin-left: 30%;
-		max-width: 52rem;
+	.notice {
+		max-width: 348px;
+		margin-top: 20px;
+		color: var(--ii-mute);
 	}
-	h1 {
-		font-size: 1.8rem;
-		letter-spacing: 0.05em;
-		margin-bottom: 3.2rem;
+	.ja-title {
+		margin-top: 40px;
 	}
-	dl {
-		display: grid;
-		grid-template-columns: 1fr;
-		gap: 0.4rem 2rem;
+
+	.rows {
+		margin-top: 40px;
+		border-top: 1px solid var(--ii-rule);
 	}
-	dt {
-		font-size: 1.1rem;
-		color: var(--subColor);
-		margin-top: 1.6rem;
+	.row {
+		padding: 16px 0;
+		border-bottom: 1px solid var(--ii-rule-soft);
 	}
-	dd {
-		font-size: 1.2rem;
-		line-height: 1.9;
+	.row dt {
+		margin-bottom: 7px;
+	}
+	.row dd {
+		/* textarea input keeps its line breaks on the public page */
+		white-space: pre-line;
+	}
+
+	.preparing {
+		margin-top: 40px;
+		color: var(--ii-mute);
 	}
 	.back {
 		display: inline-block;
-		margin-top: 5rem;
-		font-size: 1.1rem;
-		color: var(--subColor);
+		margin-top: 64px;
+		color: var(--ii-mute);
 	}
 
 	@media screen and (min-width: 720px) {
-		.wrapper {
-			margin-left: 52.5%;
+		.title {
+			max-width: 620px;
 		}
-		dl {
-			grid-template-columns: 16rem 1fr;
+		.notice {
+			max-width: 46ch;
+			margin-top: 28px;
 		}
-		dt {
-			margin-top: 0;
-			padding: 0.6rem 0;
+		.ja-title {
+			margin-top: 56px;
 		}
-		dd {
-			padding: 0.6rem 0;
-			border-bottom: 1px solid #eee;
+		.rows {
+			margin-top: 56px;
+			max-width: 900px;
+		}
+		.row {
+			display: grid;
+			grid-template-columns: 200px minmax(0, 1fr);
+			gap: 0 4vw;
+			align-items: baseline;
+			padding: 20px 0;
+		}
+		.row dt {
+			margin-bottom: 0;
+		}
+		.preparing {
+			margin-top: 56px;
+		}
+		.back {
+			margin-top: 96px;
 		}
 	}
 </style>

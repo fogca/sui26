@@ -1,9 +1,11 @@
 import { json } from '@sveltejs/kit';
 import { verifyWebhook } from '$lib/shop/stripe.js';
-import { getProductById, createPaidOrder } from '$lib/shop/store.js';
+import { getProductById, createPaidOrder, settleAsyncPayment } from '$lib/shop/store.js';
 
-// Public: Stripe webhook. Handles checkout.session.completed -> creates the
-// order and decrements stock. Idempotent via orders.session_id UNIQUE.
+// Public: Stripe webhook.
+//   checkout.session.completed          -> create the order, reserve stock
+//   checkout.session.async_payment_*    -> settle konbini / bank transfer
+// Idempotent via orders.session_id UNIQUE and conditional status transitions.
 // Configure the endpoint secret with: wrangler secret put STRIPE_WEBHOOK_SECRET
 export async function POST({ request, platform }) {
 	const secret = platform?.env?.STRIPE_WEBHOOK_SECRET || '';
@@ -13,9 +15,29 @@ export async function POST({ request, platform }) {
 		return new Response('invalid signature', { status: 400 });
 	}
 
+	// Deferred payment methods settle later: konbini and bank transfer fire
+	// checkout.session.completed with payment_status 'unpaid', then one of these.
+	if (
+		event.type === 'checkout.session.async_payment_succeeded' ||
+		event.type === 'checkout.session.async_payment_failed'
+	) {
+		await settleAsyncPayment(
+			platform.env.DB,
+			event.data.object?.id,
+			event.type === 'checkout.session.async_payment_succeeded'
+		);
+		// TODO: notify the customer once Resend is wired up.
+		return json({ received: true });
+	}
+
 	if (event.type === 'checkout.session.completed') {
 		const session = event.data.object;
-		if (session.payment_status === 'paid') {
+		// 'paid'   -> card / wallet: money is captured, order is ready to ship
+		// 'unpaid' -> konbini / bank transfer: record it as 入金待ち so the owner
+		//             never ships before the money lands. Anything else (e.g.
+		//             'no_payment_required') is ignored.
+		const deferred = session.payment_status === 'unpaid';
+		if (session.payment_status === 'paid' || deferred) {
 			const db = platform.env.DB;
 
 			// Rebuild items from the checkout-time snapshot ("id:qty:price").
@@ -65,7 +87,10 @@ export async function POST({ request, platform }) {
 				},
 				delivery_note: fields.timeslot && fields.timeslot !== 'none' ? fields.timeslot : '',
 				gift: fields.gift === 'yes',
-				note: fields.note ? `【お客様備考】${fields.note}` : ''
+				note: fields.note ? `【お客様備考】${fields.note}` : '',
+				payment_method: (session.payment_method_types ?? [])[0] ?? '',
+				// konbini / bank transfer land as 入金待ち until Stripe confirms
+				status: deferred ? 'pending_payment' : 'paid'
 			});
 			// TODO: send order-confirmation mail via Resend once RESEND_API_KEY is set.
 		}
