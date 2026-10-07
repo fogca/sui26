@@ -36,12 +36,20 @@
 			} catch (e) {}
 		</script>
 
-		<!-- The opening curtain on the home page plays once per tab session. The
-		     flag has to be set before first paint, or a returning reader sees the
-		     curtain painted and then snatched away. -->
+		<!-- The opening on the home page plays once per tab session. The flag has
+		     to be set before first paint, or a returning reader sees the opening
+		     painted and then snatched away.
+
+		     BEFORE LAUNCH: set OP_ONCE back to true here, and ONCE_PER_SESSION in
+		     src/lib/ii/Opening.svelte with it. While the site is still on the
+		     workers.dev preview the opening plays on every load, so it can be
+		     watched by reloading. The two have to agree: if only this one is on,
+		     the flag is set before paint and the opening is hidden by CSS even
+		     though the sequence is running. -->
 		<script>
+			var OP_ONCE = false;
 			try {
-				if (sessionStorage.getItem('sui-op') === '1') {
+				if (OP_ONCE && sessionStorage.getItem('sui-op') === '1') {
 					document.documentElement.dataset.opSeen = '1';
 				}
 			} catch (e) {}

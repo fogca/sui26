@@ -19,6 +19,13 @@
 
 	const dispatch = createEventDispatcher();
 
+	/** Play only the first time in a tab, or on every load.
+	 *
+	 *  BEFORE LAUNCH: set this to true, and OP_ONCE in src/app.html with it.
+	 *  While the site is still on the workers.dev preview it plays every time so
+	 *  it can be watched by reloading. Reduced motion still skips it either way. */
+	const ONCE_PER_SESSION = false;
+
 	/** The mark alone, swaying. Long enough to read as a held breath. */
 	const MARK_MS = 1500;
 	/** The words cascade in over this, still dark on the white ground. The
@@ -59,10 +66,13 @@
 	onMount(() => {
 		let seen = false;
 		try {
-			seen = sessionStorage.getItem('sui-op') === '1';
-			sessionStorage.setItem('sui-op', '1');
-			// NOT data-op-seen: that flag is app.html's, set before first paint on
-			// a LATER load. Setting it here would hide the opening playing now.
+			if (ONCE_PER_SESSION) {
+				seen = sessionStorage.getItem('sui-op') === '1';
+				sessionStorage.setItem('sui-op', '1');
+				// NOT data-op-seen: that flag is app.html's, set before first paint
+				// on a LATER load. Setting it here would hide the opening playing
+				// now.
+			}
 		} catch (e) {
 			// private mode — the opening simply plays every time
 		}
