@@ -75,8 +75,8 @@
 		<h1 class="ii-display" lang="en">{t('contact.title')}</h1>
 
 		<div class="ii-measure lead">
-			<p class="ii-body en" lang="en">{lead.en}</p>
 			<p class="ii-jp ja" lang="ja">{lead.ja}</p>
+			<p class="ii-body en" lang="en">{lead.en}</p>
 		</div>
 
 		<form class="ii-measure form" on:submit|preventDefault={send}>
@@ -123,7 +123,7 @@
 	.lead p {
 		white-space: pre-line;
 	}
-	.lead .ja {
+	.lead .en {
 		margin-top: 20px;
 	}
 	.lead {

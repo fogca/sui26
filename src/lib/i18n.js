@@ -49,7 +49,7 @@ const DICT = {
 	},
 
 	// ---- shop ------------------------------------------------------------
-	'shop.title': { ja: 'Shop', en: 'Shop' },
+	'shop.title': { ja: 'Fragrance', en: 'Fragrance' },
 	'shop.empty': { ja: 'ただいま準備中です。', en: 'Nothing available just now.' },
 	// There is no official English for 特定商取引法に基づく表記. "Legal notice" is
 	// what Shopify Japan uses for it and is what reads as a label; the Japanese

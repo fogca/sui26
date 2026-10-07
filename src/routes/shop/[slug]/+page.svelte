@@ -187,8 +187,8 @@
 						</select>
 					</label>
 					<button class="ii-btn ii-btn-fill add" on:click={() => addToCart(p.id, qty)}>
-						<span lang="en">{bag.en}</span>
 						<span class="ja" lang="ja">{bag.ja}</span>
+						<span lang="en">{bag.en}</span>
 					</button>
 				</div>
 				{#if p.stock <= 5}

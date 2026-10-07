@@ -29,8 +29,8 @@
 		<nav class="legal">
 			{#if legal}
 				<a class="ii-label" href={path('/shop/legal')}>
-					<span lang="en">{legalLabel.en}</span>
 					<span class="ja" lang="ja">{legalLabel.ja}</span>
+					<span class="en" lang="en">{legalLabel.en}</span>
 				</a>
 			{/if}
 		</nav>
@@ -71,7 +71,8 @@
 		flex-wrap: wrap;
 		gap: 2px 10px;
 	}
-	.legal .ja {
+	/* the language that follows is the quieter one */
+	.legal .en {
 		opacity: 0.78;
 	}
 	.copy {

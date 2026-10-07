@@ -39,8 +39,20 @@
 		<h1 class="ii-display title" lang="en">{t('about.title')}</h1>
 
 		<div class="copy">
-			<!-- English then Japanese, in that order, as the frame sets it. There is
-			     no language switch any more: both are simply on the page. -->
+			<!-- Japanese then English: the studio's own language leads the page, and
+			     the English follows it. There is no language switch — both are
+			     simply here. -->
+			<div class="ja statement" lang="ja">
+				<p class="ii-jp">
+					日本の伝統的な香道と世界の香文化や素材との対話を背景に、「匂い」という現象の神秘を核に据えて、未来へ織り継ぐ香の道を探求。<br
+					/>従来の香水の枠を超え、建築空間やメゾン、化粧品、菓子や飲料など、多様な領域で調香や香会をひらいている。
+				</p>
+				<p class="ii-jp">
+					植物や鉱物の抽出を手がかりに、<br />森羅万象に香る響きを紡いでいきたい。
+				</p>
+				<p class="ii-jp award">フレグランスコンテスト環境大臣賞受賞</p>
+			</div>
+
 			<div class="en statement">
 				<!-- Japan's: the source typed a curly apostrophe (U+2019), which Ango
 				     does not draw, so it would fall back to Garamond mid-word -->
@@ -60,17 +72,6 @@
 				<p class="ii-body award" lang="en">
 					Minister of the Environment Award, Fragrance Contest
 				</p>
-			</div>
-
-			<div class="ja statement" lang="ja">
-				<p class="ii-jp">
-					日本の伝統的な香道と世界の香文化や素材との対話を背景に、「匂い」という現象の神秘を核に据えて、未来へ織り継ぐ香の道を探求。<br
-					/>従来の香水の枠を超え、建築空間やメゾン、化粧品、菓子や飲料など、多様な領域で調香や香会をひらいている。
-				</p>
-				<p class="ii-jp">
-					植物や鉱物の抽出を手がかりに、<br />森羅万象に香る響きを紡いでいきたい。
-				</p>
-				<p class="ii-jp award">フレグランスコンテスト環境大臣賞受賞</p>
 			</div>
 
 			<!-- the runs are the same source data in either language, so they are
@@ -133,7 +134,7 @@
 	.en p + p.award {
 		margin-top: 36.4px;
 	}
-	.ja.statement {
+	.en.statement {
 		margin-top: 34px;
 	}
 	.ja.statement p {
@@ -161,15 +162,20 @@
 		h1.title {
 			margin-bottom: 40px;
 		}
-		/* three columns across: the English statement, the Japanese one, and the
-		   credits beside them */
+		/* two columns across — the Japanese statement and the English one — with
+		   the runs on their own row underneath rather than squeezed in beside
+		   them */
 		.copy {
 			display: grid;
-			grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) minmax(0, 1fr);
+			grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
 			gap: 0 6vw;
 			align-items: start;
 			/* the 90% measure is a phone setting */
 			width: auto;
+		}
+		.credits {
+			grid-column: 1 / -1;
+			margin-top: 64px;
 		}
 		.en p {
 			max-width: none;
@@ -183,10 +189,10 @@
 		}
 		/* the credits keep the smaller .ii-jp size; only the statement grows */
 		.ja.statement p {
-			font-size: 14px;
+			font-size: 16px;
 		}
-		.ja.statement,
-		.credits {
+		/* side by side, so neither column is pushed down */
+		.en.statement {
 			margin-top: 0;
 		}
 		.group + .group {
