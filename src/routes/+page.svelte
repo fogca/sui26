@@ -39,10 +39,16 @@
 	// its own break opportunity — without the wrapper a narrow screen can break
 	// a line in the middle of a word.
 	const HEAD_TEXT = 'Olfactory artwork / Phenomenon';
-	let n = 0;
-	const HEAD = [['Olfactory', 'artwork', '/'], ['Phenomenon']].map((line) =>
-		line.map((word) => [...word].map((ch) => ({ ch, i: n++ })))
-	);
+	/** How far into the line above the next one starts, in letters. Running one
+	 *  index straight through both lines made the second wait for the whole of
+	 *  the first — nineteen letters before "Phenomenon" moved at all. At eight
+	 *  the second line is already going while the first finishes, and the two
+	 *  land together. */
+	const LINE_LEAD = 8;
+	const HEAD = [['Olfactory', 'artwork', '/'], ['Phenomenon']].map((line, li) => {
+		let i = li * LINE_LEAD;
+		return line.map((word) => [...word].map((ch) => ({ ch, i: i++ })));
+	});
 </script>
 
 <svelte:head>
@@ -133,11 +139,15 @@
 		:global(.surface) {
 		opacity: 0;
 	}
+	/* The chrome, the services line and the signature wait a movement longer
+	   than the water does: they arrive at 'done', once the headline has finished
+	   both its entrance and its turn to white. Arriving with the water put three
+	   things on the screen at once and the line got lost among them. */
 	:global(html:not([data-op-seen]))
-		.top:is([data-op='pre'], [data-op='mark'], [data-op='text'])
+		.top:is([data-op='pre'], [data-op='mark'], [data-op='text'], [data-op='field'])
 		:global(.chrome),
 	:global(html:not([data-op-seen]))
-		.top:is([data-op='pre'], [data-op='mark'], [data-op='text'])
+		.top:is([data-op='pre'], [data-op='mark'], [data-op='text'], [data-op='field'])
 		.late {
 		opacity: 0;
 	}
@@ -195,15 +205,17 @@
 	@media screen and (min-width: 720px) {
 		.copy {
 			left: 4.4vw;
-			top: 44vh;
+			top: 50%;
+			transform: translateY(-50%);
 		}
 		.head {
 			font-size: 54px;
 		}
 		.services {
-			margin-top: 24px;
-			max-width: 420px;
-			font-size: 13px;
+			margin-top: 15px;
+			/* the line is held together by br.wide below, not by a width */
+			max-width: none;
+			font-size: 16px;
 		}
 		.services br.wide {
 			display: inline;

@@ -29,13 +29,17 @@
 	/** The mark alone, swaying. Long enough to read as a held breath. */
 	const MARK_MS = 2200;
 	/** The line cascades in over this, still dark on the white ground. The
-	 *  cascade itself runs 2.1s (1.1s a letter, 38ms apart across twenty-seven),
-	 *  so this has to be longer than that — otherwise the water starts rising
+	 *  cascade itself runs 1.75s (1.1s a letter, 38ms apart, the two lines
+	 *  overlapping so the last starts at 17 rather than 26), so this has to be
+	 *  longer than that — otherwise the water starts rising
 	 *  before the line has finished arriving and the dark-on-white beat never
 	 *  reads. */
 	const TEXT_MS = 2600;
-	/** The water rises and the letters turn with it. */
-	const FIELD_MS = 1800;
+	/** The water rises and the letters turn with it. Long enough to cover the
+	 *  turn itself: the last letter starts 0.65s in and takes 2.0s, so the line
+	 *  is white at about 2.6s — and only then does 'done' bring in the chrome,
+	 *  the services line and the signature. */
+	const FIELD_MS = 2400;
 
 	let phase = 'pre';
 	let timers = [];
