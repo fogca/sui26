@@ -188,7 +188,7 @@
 		aspect-ratio: 4 / 5;
 		overflow: hidden;
 		margin-bottom: 14px;
-		background: rgba(83, 103, 116, 0.06);
+		background: rgba(57, 71, 80, 0.06);
 	}
 	.thumb img {
 		width: 100%;

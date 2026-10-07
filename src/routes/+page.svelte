@@ -95,7 +95,7 @@
 		/* .ii .on-field has already turned --ii-ink white for this page, so the
 		   opening cannot ask for the ink by that name. This is ii.css's own
 		   --ii-ink value. */
-		--op-ink: #536774;
+		--op-ink: #394750;
 	}
 
 	/* ─── the opening ────────────────────────────────────────────────

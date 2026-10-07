@@ -65,7 +65,7 @@
 			<a class="ii-body" class:current={$page.url.pathname === l.href} href={l.href}>{l.label}</a>
 		{/each}
 		<button class="cart" type="button" on:click={openCart} aria-label={t('shop.openCart')}>
-			<img src="/ii/cart.svg" alt="" width="16" height="15" class:inked={!pale} />
+			<span class="glyph" aria-hidden="true"></span>
 			{#if count > 0}<span class="ii-micro count">{count}</span>{/if}
 		</button>
 	</nav>
@@ -128,14 +128,16 @@
 		gap: 4px;
 		cursor: pointer;
 	}
-	.cart img {
+	/* The glyph takes its colour from the type around it. It used to be an
+	   <img> recoloured by a hand-tuned filter chain, which was solved for one
+	   particular ink and silently stopped matching the moment that token moved. */
+	.cart .glyph {
+		display: block;
 		width: 16px;
-		height: auto;
-	}
-	/* the cart glyph ships white; on a white surface it has to read as ink */
-	.cart img.inked {
-		filter: brightness(0) saturate(100%) invert(39%) sepia(13%) saturate(730%)
-			hue-rotate(158deg) brightness(93%) contrast(88%);
+		height: 15px;
+		background: currentColor;
+		-webkit-mask: url('/ii/cart.svg') no-repeat center / contain;
+		mask: url('/ii/cart.svg') no-repeat center / contain;
 	}
 	.count {
 		font-size: 9px;
@@ -154,8 +156,9 @@
 		.cart {
 			margin-left: 24px;
 		}
-		.cart img {
+		.cart .glyph {
 			width: 18px;
+			height: 17px;
 		}
 	}
 </style>

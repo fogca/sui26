@@ -14,7 +14,7 @@
    tablets.
 
    Palette and scale, straight from the frames:
-     ink   #536774   display, body, JP copy
+     ink   #394750   display, body, JP copy
      pale  #e9f0f5   type over the photograph
      Ango  Thin 250 throughout, tracking 0.02em at every size
      JP    tracking 0.05em, line-height 1.8
@@ -43,14 +43,14 @@
 }
 
 .ii {
-	--ii-ink: #536774;
+	--ii-ink: #394750;
 	--ii-ink-deep: #2f3d47;
 	--ii-pale: #e9f0f5;
 	--ii-bg: #ffffff;
-	--ii-rule: rgba(83, 103, 116, 0.28);
-	--ii-rule-soft: rgba(83, 103, 116, 0.14);
-	--ii-fill-out: rgba(83, 103, 116, 0.42);
-	--ii-mute: rgba(83, 103, 116, 0.62);
+	--ii-rule: rgba(57, 71, 80, 0.28);
+	--ii-rule-soft: rgba(57, 71, 80, 0.14);
+	--ii-fill-out: rgba(57, 71, 80, 0.42);
+	--ii-mute: rgba(57, 71, 80, 0.62);
 	--ii-alert: #9a6b2f;
 
 	/* Ango, held to a single weight: Thin 250 everywhere (2026-10-06).
@@ -460,7 +460,7 @@
 		font-size: 13px;
 	}
 	.ii .ii-jp {
-		font-size: 12.5px;
+		font-size: 16px;
 	}
 	.ii .ii-micro {
 		font-size: 8px;

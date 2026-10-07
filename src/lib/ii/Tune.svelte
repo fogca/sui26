@@ -13,7 +13,7 @@
 
 	const KEY = 'sui-tune';
 	/** ii.css's own ink, so Reset has something to go back to. */
-	const INK = '#536774';
+	const INK = '#394750';
 
 	const hexToRgb = (h) => [
 		parseInt(h.slice(1, 3), 16),
