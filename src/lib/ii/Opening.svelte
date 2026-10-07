@@ -27,14 +27,15 @@
 	const ONCE_PER_SESSION = false;
 
 	/** The mark alone, swaying. Long enough to read as a held breath. */
-	const MARK_MS = 1500;
-	/** The words cascade in over this, still dark on the white ground. The
-	 *  cascade itself runs 1.1s (0.9s a word, 70ms apart across four), so this
-	 *  has to be longer than that — otherwise the water starts rising before the
-	 *  line has finished arriving and the dark-on-white beat never reads. */
-	const TEXT_MS = 1500;
-	/** The water rises and the words turn with it. */
-	const FIELD_MS = 1400;
+	const MARK_MS = 2200;
+	/** The line cascades in over this, still dark on the white ground. The
+	 *  cascade itself runs 2.1s (1.1s a letter, 38ms apart across twenty-seven),
+	 *  so this has to be longer than that — otherwise the water starts rising
+	 *  before the line has finished arriving and the dark-on-white beat never
+	 *  reads. */
+	const TEXT_MS = 2600;
+	/** The water rises and the letters turn with it. */
+	const FIELD_MS = 1800;
 
 	let phase = 'pre';
 	let timers = [];
@@ -140,8 +141,8 @@
 	.op[data-phase='mark'] .mark {
 		/* arrives, then keeps swaying until it is asked to leave */
 		animation:
-			rise 900ms ease both,
-			sway 5s ease-in-out 900ms infinite;
+			rise 1100ms ease both,
+			sway 6s ease-in-out 1100ms infinite;
 	}
 
 	/* the mark leaves on its own, a touch slower than it arrived */

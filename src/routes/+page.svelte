@@ -31,12 +31,17 @@
 	 *  flagged the opening as already seen. */
 	let phase = 'pre';
 
-	// The headline, split so each word can be moved and recoloured on its own.
-	// The cascade index runs across both lines rather than restarting, so the
-	// stagger reads as one movement left to right.
+	// The headline, split to the letter so each one can be moved and recoloured
+	// on its own. The cascade index runs across both lines rather than
+	// restarting, so the stagger reads as one movement left to right.
+	//
+	// Letters are grouped back into words because an inline-block per letter is
+	// its own break opportunity — without the wrapper a narrow screen can break
+	// a line in the middle of a word.
+	const HEAD_TEXT = 'Olfactory artwork / Phenomenon';
 	let n = 0;
 	const HEAD = [['Olfactory', 'artwork', '/'], ['Phenomenon']].map((line) =>
-		line.map((word) => ({ word, i: n++ }))
+		line.map((word) => [...word].map((ch) => ({ ch, i: n++ })))
 	);
 </script>
 
@@ -46,7 +51,7 @@
 	<!-- without JS no phase ever arrives, so the page must start at the end of
 	     the opening rather than at the beginning of it -->
 	<noscript>
-		{@html '<style>.top .late,.top .head .w{opacity:1 !important;transform:none !important;color:inherit !important}.surface{opacity:1 !important}</style>'}
+		{@html '<style>.top .late,.top .head .c{opacity:1 !important;transform:none !important;color:inherit !important}.surface{opacity:1 !important}</style>'}
 	</noscript>
 </svelte:head>
 
@@ -57,9 +62,10 @@
 	<Chrome tone="over" />
 
 	<div class="copy">
-		<h1 class="head" lang="en">
-			{#each HEAD as line, li}{#each line as w, wi}<span class="w" style="--i:{w.i}"
-					>{w.word}</span
+		<!-- the letters are decoration to a screen reader; the label is the line -->
+		<h1 class="head" lang="en" aria-label={HEAD_TEXT}>
+			{#each HEAD as line, li}{#each line as word, wi}<span class="word"
+					>{#each word as c}<span class="c" style="--i:{c.i}">{c.ch}</span>{/each}</span
 				>{#if wi < line.length - 1}{' '}{/if}{/each}{#if li < HEAD.length - 1}<br />{/if}{/each}
 		</h1>
 		<p class="services late" lang="en">
@@ -92,27 +98,33 @@
 	   therefore never shown a frame of it, even though the phases still run. */
 
 	.top :global(.surface) {
-		transition: opacity 1.6s ease;
+		transition: opacity 2.2s ease;
 	}
 	.top :global(.chrome) {
-		transition: opacity 1.2s ease;
+		transition: opacity 1.8s ease;
 	}
 	.late {
-		transition: opacity 1.2s ease;
+		transition: opacity 1.8s ease;
 	}
-	.head .w {
-		/* inline-block so the words have something to move */
+	/* holds a word together: every letter below is an inline-block and so a
+	   break opportunity of its own */
+	.head .word {
 		display: inline-block;
-		/* The colour is paced to the water's own 1.6s rather than run ahead of
-		   it: at 0.8s the words were fully white while the field was only half
-		   up, which on this palette is white type on an almost white ground. */
+	}
+	.head .c {
+		/* inline-block so the letters have something to move */
+		display: inline-block;
+		/* The colour is paced to the water's own 2.2s rather than run ahead of
+		   it: finishing early left the letters fully white while the field was
+		   only half up, which on this palette is white type on an almost white
+		   ground. */
 		transition:
-			opacity 0.9s ease,
-			transform 0.9s cubic-bezier(0.2, 0.7, 0.3, 1),
-			color 1.4s ease;
+			opacity 1.1s ease,
+			transform 1.1s cubic-bezier(0.2, 0.7, 0.3, 1),
+			color 2s ease;
 		/* the stagger — it carries the entrance and, later, the turn to white,
 		   so both read as the same movement crossing the line */
-		transition-delay: calc(var(--i) * 70ms);
+		transition-delay: calc(var(--i) * 38ms);
 	}
 
 	/* the water is down, and so is everything that belongs on top of it */
@@ -131,12 +143,12 @@
 	}
 
 	/* the headline waits for its own movement, one step ahead of the rest */
-	:global(html:not([data-op-seen])) .top:is([data-op='pre'], [data-op='mark']) .head .w {
+	:global(html:not([data-op-seen])) .top:is([data-op='pre'], [data-op='mark']) .head .c {
 		opacity: 0;
 		transform: translateX(-18px);
 	}
 	/* dark on the white ground, until the water is there to be white against */
-	:global(html:not([data-op-seen])) .top:is([data-op='mark'], [data-op='text']) .head .w {
+	:global(html:not([data-op-seen])) .top:is([data-op='mark'], [data-op='text']) .head .c {
 		color: var(--op-ink);
 	}
 
@@ -204,7 +216,7 @@
 	}
 
 	@media (prefers-reduced-motion: reduce) {
-		.head .w,
+		.head .c,
 		.late,
 		.top :global(.surface),
 		.top :global(.chrome) {
