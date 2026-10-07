@@ -167,20 +167,23 @@
 		   them */
 		.copy {
 			display: grid;
-			grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
-			gap: 0 6vw;
+			/* two text columns that stop short of the right edge — the third track
+			   carries nothing and is there to hold that margin open */
+			grid-template-columns: minmax(0, 0.75fr) minmax(0, 0.75fr) minmax(0, 0.25fr);
+			gap: 0 3vw;
 			align-items: start;
 			/* the 90% measure is a phone setting */
 			width: auto;
 		}
 		.credits {
 			grid-column: 1 / -1;
+			width: 38%;
 			margin-top: 64px;
 		}
 		.en p {
 			max-width: none;
-			font-size: 15px;
-			line-height: 1.35;
+			font-size: 14px;
+			line-height: 1.6;
 			/* the tracking and the hyphenation are phone settings too — this
 			   column is wide enough to set without either */
 			letter-spacing: 0.03em;
