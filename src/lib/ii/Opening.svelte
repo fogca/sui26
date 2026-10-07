@@ -26,8 +26,11 @@
 	 *  it can be watched by reloading. Reduced motion still skips it either way. */
 	const ONCE_PER_SESSION = false;
 
-	/** The mark alone, swaying. Long enough to read as a held breath. */
-	const MARK_MS = 2200;
+	/** The mark alone on the white ground, swaying, before the line arrives.
+	 *  Off at the studio's request: at 0 the opening starts on the headline and
+	 *  the mark is never built. Give it a duration again to bring it back —
+	 *  2200 was what it ran at. */
+	const MARK_MS = 0;
 	/** The line cascades in over this, still dark on the white ground. The
 	 *  cascade itself runs 1.75s (1.1s a letter, 38ms apart, the two lines
 	 *  overlapping so the last starts at 17 rather than 26), so this has to be
@@ -87,15 +90,32 @@
 		}
 
 		lock();
-		go('mark');
-		timers.push(setTimeout(() => go('text'), MARK_MS));
-		timers.push(setTimeout(() => go('field'), MARK_MS + TEXT_MS));
-		timers.push(
-			setTimeout(() => {
-				unlock();
-				go('done');
-			}, MARK_MS + TEXT_MS + FIELD_MS)
-		);
+
+		// Everything after the line arrives is timed from the moment it actually
+		// starts, not from mount. Without a mark phase the start waits on two
+		// frames, and frames can be a long way apart in a tab that is not being
+		// looked at — timing the rest from mount collapsed the text phase to a
+		// fraction of its length whenever that happened.
+		const startText = () => {
+			go('text');
+			timers.push(setTimeout(() => go('field'), TEXT_MS));
+			timers.push(
+				setTimeout(() => {
+					unlock();
+					go('done');
+				}, TEXT_MS + FIELD_MS)
+			);
+		};
+
+		if (MARK_MS > 0) {
+			go('mark');
+			timers.push(setTimeout(startText, MARK_MS));
+		} else {
+			// The 'pre' state has to reach the screen before the phase moves on,
+			// or the browser coalesces the two and the cascade jumps straight to
+			// its end with nothing to transition from.
+			requestAnimationFrame(() => requestAnimationFrame(startText));
+		}
 
 		for (const e of INPUT) window.addEventListener(e, skip, { passive: true, once: true });
 	});
@@ -110,10 +130,13 @@
 </script>
 
 <!-- The mark sits on the page's own white ground; it does not carry one of its
-     own, so there is nothing to fade out from under it. -->
-<div class="op" data-phase={phase} aria-hidden="true">
-	<img class="mark" src="/ii/symbol-ink.svg" alt="" width="151" height="126" />
-</div>
+     own, so there is nothing to fade out from under it. Not built at all while
+     MARK_MS is 0, so the file is not fetched either. -->
+{#if MARK_MS > 0}
+	<div class="op" data-phase={phase} aria-hidden="true">
+		<img class="mark" src="/ii/symbol-ink.svg" alt="" width="151" height="126" />
+	</div>
+{/if}
 
 <style>
 	.op {

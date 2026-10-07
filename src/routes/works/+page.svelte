@@ -8,8 +8,11 @@
 	import { page } from '$app/stores';
 	import Surface from '$lib/ii/Surface.svelte';
 	import { BREATH } from '$lib/ii/surface.js';
+	import Band from '$lib/ii/Band.svelte';
+	import { chromeOverBand } from '$lib/ii/band.js';
 	import Chrome from '$lib/ii/Chrome.svelte';
 	import Foot from '$lib/ii/Foot.svelte';
+	import { onMount } from 'svelte';
 	import { works } from '$lib/works.js';
 	import { translator, localizePath, splitLang } from '$lib/i18n.js';
 
@@ -25,6 +28,21 @@
 
 	$: t = translator(data.lang);
 	$: jaPath = splitLang($page.url.pathname).path;
+
+	// White over the band, ink once the chrome has left it — a fixed white
+	// header would otherwise disappear into the pale page below.
+	let overBand = true;
+
+	onMount(() => {
+		const sync = () => (overBand = chromeOverBand());
+		sync();
+		window.addEventListener('scroll', sync, { passive: true });
+		window.addEventListener('resize', sync);
+		return () => {
+			window.removeEventListener('scroll', sync);
+			window.removeEventListener('resize', sync);
+		};
+	});
 </script>
 
 <svelte:head>
@@ -32,11 +50,11 @@
 	<link rel="canonical" href="{SITE}{jaPath}" />
 </svelte:head>
 
-<div class="ii-page">
+<div class="ii-page works">
 	<Surface study={BREATH} />
-	<Chrome tone="ink" />
 
-	<main class="ii-main">
+	<!-- the water across the top half, with the title set over it in white -->
+	<Band>
 		<!-- English-only heading -->
 		<h1 class="ii-display" lang="en">{t('works.title')}</h1>
 		<!-- the lead is translated, so it takes the class of whichever script it
@@ -49,7 +67,11 @@
 		>
 			{t('works.lead')}
 		</p>
+	</Band>
 
+	<Chrome tone={overBand ? 'over' : 'ink'} />
+
+	<main class="ii-main">
 		<ul class="grid">
 			{#each items as w, i}
 				<li>
@@ -68,6 +90,16 @@
 </div>
 
 <style>
+	/* the band is positioned against the page, so the page has to be the
+	   containing block */
+	.works {
+		position: relative;
+	}
+	/* the grid starts below the band rather than under ii.css's own top padding */
+	.works .ii-main {
+		padding-top: 50vh;
+	}
+
 	h1 {
 		/* the About frame's 167 -> 216 is top to top, so the gap is what is left
 		   under a 28px line at 1.2 */
