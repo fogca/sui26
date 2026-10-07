@@ -3,8 +3,7 @@
 	import { fade } from 'svelte/transition';
 	import { afterNavigate } from '$app/navigation';
 	import { browser } from '$app/environment';
-	import { splitLang } from '$lib/i18n.js';
-	import Tune from '$lib/ii/Tune.svelte';
+		import Tune from '$lib/ii/Tune.svelte';
 
 	// ?tune mounts the colour bar — on the deployed site too, so the palette can
 	// be judged on an actual phone. It is remembered for the rest of the tab
@@ -34,7 +33,7 @@
 	// here rather than by loading ii.css unscoped.
 	const ADMIN =
 		/^\/shop\/edit(\/|$)|^\/log\/(edit|new|login)(\/|$)|^\/log\/[^/]+\/edit\/?$/;
-	$: isAdmin = ADMIN.test(splitLang($page.url.pathname).path);
+	$: isAdmin = ADMIN.test($page.url.pathname);
 
 	// Akashi is delivered by TypeSquare as a dynamic subset: the loader scans
 	// the DOM once, then injects an @font-face whose URL encodes exactly the

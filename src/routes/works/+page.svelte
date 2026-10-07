@@ -14,7 +14,7 @@
 	import Foot from '$lib/ii/Foot.svelte';
 	import { onMount } from 'svelte';
 	import { works } from '$lib/works.js';
-	import { translator, localizePath, splitLang } from '$lib/i18n.js';
+	import {translator} from '$lib/i18n.js';
 
 	export let data;
 
@@ -27,7 +27,6 @@
 	const items = works.filter((w) => (seen.has(w.text) ? false : seen.add(w.text)));
 
 	$: t = translator(data.lang);
-	$: jaPath = splitLang($page.url.pathname).path;
 
 	// White over the band, ink once the chrome has left it — a fixed white
 	// header would otherwise disappear into the pale page below.
@@ -47,7 +46,7 @@
 
 <svelte:head>
 	<title>{t('works.title')} — {t('common.siteName')}</title>
-	<link rel="canonical" href="{SITE}{jaPath}" />
+	<link rel="canonical" href="{SITE}{$page.url.pathname}" />
 </svelte:head>
 
 <div class="ii-page works">

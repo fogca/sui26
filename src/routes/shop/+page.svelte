@@ -11,14 +11,13 @@
 	import CartDrawer from '$lib/shop/CartDrawer.svelte';
 	import { yen } from '$lib/shop/money.js';
 	import { page } from '$app/stores';
-	import { translator, localizePath } from '$lib/i18n.js';
+	import {translator} from '$lib/i18n.js';
 	import { onMount } from 'svelte';
 	export let data;
 
 	const SITE = 'https://sui-sari.hi-843.workers.dev';
 
 	$: t = translator(data.lang);
-	$: path = (p) => localizePath(p, data.lang);
 
 	// Built from the catalogue itself, so the aside appears the moment the back
 	// office starts filling the field in and stays away while it is empty.
@@ -87,7 +86,7 @@
 		<ul class="grid">
 			{#each shown as p (p.id)}
 				<li class="card">
-					<a class="plate" href={path(`/shop/${p.slug}`)}>
+					<a class="plate" href={`/shop/${p.slug}`}>
 						<div class="thumb">
 							{#if p.image}<img src={p.image} alt={p.name} />{/if}
 							<!-- on the plate itself, so the photograph is never dimmed -->
@@ -110,7 +109,7 @@
 			<p class="empty ii-body ii-mute" lang={data.lang}>{t('shop.empty')}</p>
 		{/if}
 
-		<a class="legal-link ii-label" href={path('/shop/legal')} lang={data.lang}>{t('shop.legal')}</a>
+		<a class="legal-link ii-label" href={'/shop/legal'} lang={data.lang}>{t('shop.legal')}</a>
 	</main>
 
 	<!-- the legal link is already in this page's flow, as Foot expects -->

@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="%lang%">
+<html lang="ja">
 	<head>
 		<meta charset="utf-8" />
 		<link rel="icon" href="%sveltekit.assets%/favicon.png" />
@@ -12,29 +12,6 @@
 		<meta property="og:title" content="SUI scent studio" />
 		<meta property="og:description" content="蕊 SUI scent studio" />
 		<meta property="og:image" content="/ogp.png" />
-
-		<!-- Language, decided before first paint (same idea as Dev/OTIF, adapted
-		     to this site's /en URLs so each language stays linkable).
-		     Only the bare Japanese entry point auto-redirects, and only when the
-		     visitor has expressed no choice this session and their browser is not
-		     Japanese. An explicit pick (sessionStorage) always wins, so switching
-		     to 日本語 never bounces back to English. -->
-		<script>
-			try {
-				var p = location.pathname;
-				var picked = sessionStorage.getItem('sui-lang');
-				var isEnPath = p === '/en' || p.indexOf('/en/') === 0;
-				if (picked === 'en' && !isEnPath && (p === '/' || p === '')) {
-					location.replace('/en');
-				} else if (
-					!picked &&
-					(p === '/' || p === '') &&
-					!(navigator.language || '').toLowerCase().startsWith('ja')
-				) {
-					location.replace('/en');
-				}
-			} catch (e) {}
-		</script>
 
 		<!-- The opening on the home page plays once per tab session. The flag has
 		     to be set before first paint, or a returning reader sees the opening

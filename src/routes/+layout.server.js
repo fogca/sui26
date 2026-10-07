@@ -1,4 +1,8 @@
-/** Expose the language (resolved in hooks.server.js) to every page. */
-export function load({ locals }) {
-	return { lang: locals.lang ?? 'ja' };
+import { DEFAULT_LANG } from '$lib/i18n.js';
+
+/** The site is served in one language's URLs; the pages carry both languages
+ *  themselves. Kept so t() has something to read rather than every page
+ *  importing the constant. */
+export function load() {
+	return { lang: DEFAULT_LANG };
 }

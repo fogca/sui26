@@ -12,19 +12,17 @@
 	import Foot from '$lib/ii/Foot.svelte';
 	import BlockRenderer from '$lib/log/BlockRenderer.svelte';
 	import { page } from '$app/stores';
-	import { translator, localizePath, splitLang } from '$lib/i18n.js';
+	import {translator} from '$lib/i18n.js';
 	export let data;
 
 	const SITE = 'https://sui-sari.hi-843.workers.dev';
 
 	$: t = translator(data.lang);
-	$: path = (q) => localizePath(q, data.lang);
-	$: jaPath = splitLang($page.url.pathname).path;
 </script>
 
 <svelte:head>
 	<title>{data.post.title} — {t('common.siteName')}</title>
-	<link rel="canonical" href="{SITE}{jaPath}" />
+	<link rel="canonical" href="{SITE}{$page.url.pathname}" />
 </svelte:head>
 
 <div class="ii-page">
@@ -41,7 +39,7 @@
 				<BlockRenderer blocks={data.post.blocks} />
 			</div>
 
-			<a class="ii-body back" href={path('/log')} lang="en">{t('log.backToLog')}</a>
+			<a class="ii-body back" href={'/log'} lang="en">{t('log.backToLog')}</a>
 		</article>
 	</main>
 

@@ -12,7 +12,7 @@
 	import { BREATH } from '$lib/ii/surface.js';
 	import Chrome from '$lib/ii/Chrome.svelte';
 	import Foot from '$lib/ii/Foot.svelte';
-	import { translator, both, localizePath, splitLang } from '$lib/i18n.js';
+	import {translator, both} from '$lib/i18n.js';
 
 	export let data;
 
@@ -31,7 +31,6 @@
 	$: t = translator(data.lang);
 	$: lead = both('contact.lead');
 	// hreflang pair for this page, derived from the un-prefixed route
-	$: jaPath = splitLang($page.url.pathname).path;
 
 	// Japanese body copy is set in the gothic at its own measure; English takes
 	// the Latin body size. Applied with class: directives rather than an
@@ -63,7 +62,7 @@
 
 <svelte:head>
 	<title>{t('contact.title')} — {t('common.siteName')}</title>
-	<link rel="canonical" href="{SITE}{jaPath}" />
+	<link rel="canonical" href="{SITE}{$page.url.pathname}" />
 </svelte:head>
 
 <div class="ii-page">

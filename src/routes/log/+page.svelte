@@ -10,19 +10,17 @@
 	import Chrome from '$lib/ii/Chrome.svelte';
 	import Foot from '$lib/ii/Foot.svelte';
 	import { page } from '$app/stores';
-	import { translator, localizePath, splitLang } from '$lib/i18n.js';
+	import {translator} from '$lib/i18n.js';
 	export let data;
 
 	const SITE = 'https://sui-sari.hi-843.workers.dev';
 
 	$: t = translator(data.lang);
-	$: path = (q) => localizePath(q, data.lang);
-	$: jaPath = splitLang($page.url.pathname).path;
 </script>
 
 <svelte:head>
 	<title>{t('log.title')} — {t('common.siteName')}</title>
-	<link rel="canonical" href="{SITE}{jaPath}" />
+	<link rel="canonical" href="{SITE}{$page.url.pathname}" />
 </svelte:head>
 
 <div class="ii-page">
@@ -36,7 +34,7 @@
 		<ul class="list">
 			{#each data.posts as post (post.slug)}
 				<li class="row">
-					<a href={path(`/log/${post.slug}`)}>
+					<a href={`/log/${post.slug}`}>
 						{#if post.cover}
 							<div class="thumb"><img src={post.cover} alt="" /></div>
 						{/if}

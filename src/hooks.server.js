@@ -1,6 +1,5 @@
 import { redirect } from '@sveltejs/kit';
 import { editorPassword, verifyToken, SESSION_COOKIE } from '$lib/log/auth.js';
-import { splitLang } from '$lib/i18n.js';
 
 // Gate the editor surfaces:
 // - log:  /log/edit, /log/new, /log/<slug>/edit, /log/api/*
@@ -29,13 +28,6 @@ export async function handle({ event, resolve }) {
 		return new Response('Bad Request', { status: 400 });
 	}
 
-	// reroute() has already mapped /en/* onto the bare route; recover the
-	// language from the original URL so pages can render in it. The admin is
-	// Japanese-only, so anything under /shop/edit or /log stays 'ja'.
-	const { lang, path } = splitLang(pathname);
-	event.locals.lang = lang;
-	pathname = path; // gate on the real route, not the /en alias
-
 	if (isProtected(pathname)) {
 		const token = event.cookies.get(SESSION_COOKIE);
 		const ok = await verifyToken(token, editorPassword(event.platform));
@@ -46,9 +38,5 @@ export async function handle({ event, resolve }) {
 			throw redirect(302, '/log/login?next=' + encodeURIComponent(pathname));
 		}
 	}
-	// %lang% in app.html gets the real language so <html lang> is correct for
-	// screen readers, search engines and our :lang() font rules.
-	return resolve(event, {
-		transformPageChunk: ({ html }) => html.replace('%lang%', lang)
-	});
+	return resolve(event);
 }

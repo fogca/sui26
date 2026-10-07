@@ -1,31 +1,14 @@
-// Lightweight bilingual support. Japanese is the default; English lives under
-// an /en prefix which src/hooks.js strips before routing, so there is exactly
-// one copy of every route.
-//
-//   /shop      -> Japanese
-//   /en/shop   -> English
+// The site's own words. There is one copy of every route and one URL for it:
+// the /en prefix, the reroute that stripped it and the switch that pointed at
+// it are all gone. Both languages are simply on the page together — see both()
+// below — and anything that reads in one language only is written here once.
 //
 // Usage in a component:
 //   export let data;            // { lang } comes from +layout.server.js
 //   $: t = translator(data.lang);
 //   <h1>{t('shop.title')}</h1>
 
-export const LANGS = ['ja', 'en'];
 export const DEFAULT_LANG = 'ja';
-
-/** Strip a leading /en from a pathname. Returns { lang, path }. */
-export function splitLang(pathname) {
-	if (pathname === '/en') return { lang: 'en', path: '/' };
-	if (pathname.startsWith('/en/')) return { lang: 'en', path: pathname.slice(3) };
-	return { lang: 'ja', path: pathname };
-}
-
-/** Build a href for the given language: ja keeps the bare path, en gets /en. */
-export function localizePath(path, lang) {
-	const clean = path.startsWith('/') ? path : `/${path}`;
-	if (lang !== 'en') return clean;
-	return clean === '/' ? '/en' : `/en${clean}`;
-}
 
 const DICT = {
 	// ---- global / nav ----------------------------------------------------
@@ -185,7 +168,8 @@ export function both(key, vars) {
 }
 
 export function translator(lang) {
-	const l = LANGS.includes(lang) ? lang : DEFAULT_LANG;
+	// both() still asks for either language by name; anything else falls back
+	const l = lang === 'ja' || lang === 'en' ? lang : DEFAULT_LANG;
 	return (key, vars) => {
 		const entry = DICT[key];
 		if (!entry) return key; // surface the missing key rather than blank text

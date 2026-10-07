@@ -7,20 +7,19 @@
 	// displayed, and the guidance is that a buyer must be able to find it
 	// easily, which a generic label works against.
 	import { page } from '$app/stores';
-	import { localizePath, translator, both } from '$lib/i18n.js';
+	import {translator, both} from '$lib/i18n.js';
 
 	/** The shop pages carry the statutory link in their own flow already. */
 	export let legal = true;
 
 	$: lang = $page.data?.lang ?? 'ja';
 	$: t = translator(lang);
-	$: path = (p) => localizePath(p, lang);
 	$: legalLabel = both('shop.legal');
 </script>
 
 <footer class="foot">
 	<nav class="top">
-		<a class="ii-body" href={path('/contact')} lang="en">{t('nav.contact')}</a>
+		<a class="ii-body" href={'/contact'} lang="en">{t('nav.contact')}</a>
 	</nav>
 
 	<span class="studio" lang="en">scent studio</span>
@@ -28,7 +27,7 @@
 	<div class="base">
 		<nav class="legal">
 			{#if legal}
-				<a class="ii-label" href={path('/shop/legal')}>
+				<a class="ii-label" href={'/shop/legal'}>
 					<span class="ja" lang="ja">{legalLabel.ja}</span>
 					<span class="en" lang="en">{legalLabel.en}</span>
 				</a>

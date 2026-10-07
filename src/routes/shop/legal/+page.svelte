@@ -8,7 +8,7 @@
 	import Chrome from '$lib/ii/Chrome.svelte';
 	import Foot from '$lib/ii/Foot.svelte';
 	import { page } from '$app/stores';
-	import { translator, localizePath, splitLang } from '$lib/i18n.js';
+	import {translator} from '$lib/i18n.js';
 
 	export let data;
 
@@ -16,13 +16,11 @@
 
 	$: rows = data.rows;
 	$: t = translator(data.lang);
-	$: path = (q) => localizePath(q, data.lang);
-	$: jaPath = splitLang($page.url.pathname).path;
 </script>
 
 <svelte:head>
 	<title>{t('shop.legal')} — {t('common.siteName')}</title>
-	<link rel="canonical" href="{SITE}{jaPath}" />
+	<link rel="canonical" href="{SITE}{$page.url.pathname}" />
 </svelte:head>
 
 <div class="ii-page">
@@ -49,7 +47,7 @@
 			<p class="ii-body preparing" lang={data.lang}>{t('legal.preparing')}</p>
 		{/if}
 
-		<a class="ii-body back" href={path('/shop')} lang={data.lang}>{t('shop.backToShop')}</a>
+		<a class="ii-body back" href={'/shop'} lang={data.lang}>{t('shop.backToShop')}</a>
 	</main>
 
 	<!-- the footer's legal link would point at this page -->

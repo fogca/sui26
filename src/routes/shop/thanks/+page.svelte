@@ -10,19 +10,17 @@
 	import Foot from '$lib/ii/Foot.svelte';
 	import { yen } from '$lib/shop/money.js';
 	import { page } from '$app/stores';
-	import { translator, localizePath, splitLang } from '$lib/i18n.js';
+	import {translator} from '$lib/i18n.js';
 	export let data;
 
 	const SITE = 'https://sui-sari.hi-843.workers.dev';
 
 	$: t = translator(data.lang);
-	$: path = (q) => localizePath(q, data.lang);
-	$: jaPath = splitLang($page.url.pathname).path;
 </script>
 
 <svelte:head>
 	<title>{t('thanks.title')} — {t('common.siteName')}</title>
-	<link rel="canonical" href="{SITE}{jaPath}" />
+	<link rel="canonical" href="{SITE}{$page.url.pathname}" />
 </svelte:head>
 
 <div class="ii-page">
@@ -60,7 +58,7 @@
 				<p class="note lone ii-jp">{t('thanks.notFoundNote')}</p>
 			{/if}
 
-			<a class="ii-body back" href={path('/shop')}>{t('shop.backToShop')}</a>
+			<a class="ii-body back" href={'/shop'}>{t('shop.backToShop')}</a>
 		</div>
 	</main>
 

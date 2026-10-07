@@ -16,7 +16,7 @@
 	// and Japanese together, so there is nothing to switch between.
 	import { page } from '$app/stores';
 	import { cart, cartOpen, cartDrawerMounted } from '$lib/shop/cart.js';
-	import { localizePath, translator } from '$lib/i18n.js';
+	import {translator} from '$lib/i18n.js';
 	import { goto } from '$app/navigation';
 
 	/** 'over' — white, on the field. 'ink' — for any surface that stays white. */
@@ -33,13 +33,12 @@
 
 	$: lang = $page.data?.lang ?? 'ja';
 	$: t = translator(lang);
-	$: path = (p) => localizePath(p, lang);
-	$: home = path('/');
+	$: home = '/';
 
 	$: links = [
-		{ label: t('nav.fragrance'), href: path('/shop') },
-		{ label: t('nav.works'), href: path('/works') },
-		{ label: t('nav.about'), href: path('/about') }
+		{ label: t('nav.fragrance'), href: '/shop' },
+		{ label: t('nav.works'), href: '/works' },
+		{ label: t('nav.about'), href: '/about' }
 	];
 
 	$: count = $cart.reduce((s, i) => s + i.qty, 0);
@@ -48,7 +47,7 @@
 	 *  shop, which is where the drawer lives. */
 	function openCart() {
 		if ($cartDrawerMounted) cartOpen.set(true);
-		else goto(path('/shop'));
+		else goto('/shop');
 	}
 </script>
 

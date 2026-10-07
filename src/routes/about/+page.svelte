@@ -15,7 +15,7 @@
 	import Surface from '$lib/ii/Surface.svelte';
 	import Chrome from '$lib/ii/Chrome.svelte';
 	import Foot from '$lib/ii/Foot.svelte';
-	import { translator, localizePath, splitLang } from '$lib/i18n.js';
+	import {translator} from '$lib/i18n.js';
 
 	export let data;
 
@@ -23,12 +23,11 @@
 
 	$: t = translator(data.lang);
 	// hreflang pair for this page, derived from the un-prefixed route
-	$: jaPath = splitLang($page.url.pathname).path;
 </script>
 
 <svelte:head>
 	<title>About — {t('common.siteName')}</title>
-	<link rel="canonical" href="{SITE}{jaPath}" />
+	<link rel="canonical" href="{SITE}{$page.url.pathname}" />
 </svelte:head>
 
 <div class="ii-page on-field">

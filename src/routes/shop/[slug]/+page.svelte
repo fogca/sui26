@@ -12,7 +12,7 @@
 	import { addToCart } from '$lib/shop/cart.js';
 	import { yen } from '$lib/shop/money.js';
 	import { page } from '$app/stores';
-	import { translator, localizePath, splitLang, both } from '$lib/i18n.js';
+	import {translator, both} from '$lib/i18n.js';
 	export let data;
 
 	const SITE = 'https://sui-sari.hi-843.workers.dev';
@@ -113,14 +113,12 @@
 	$: maxQty = Math.min(9, p.stock);
 
 	$: t = translator(data.lang);
-	$: path = (q) => localizePath(q, data.lang);
-	$: jaPath = splitLang($page.url.pathname).path;
 	$: bag = both('shop.addToCart');
 </script>
 
 <svelte:head>
 	<title>{p.name} — {t('common.siteName')}</title>
-	<link rel="canonical" href="{SITE}{jaPath}" />
+	<link rel="canonical" href="{SITE}{$page.url.pathname}" />
 </svelte:head>
 
 <CartDrawer settings={data.settings} />
