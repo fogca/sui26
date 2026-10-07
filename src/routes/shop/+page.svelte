@@ -4,12 +4,15 @@
 	// bag, in the same place either way.
 	import Surface from '$lib/ii/Surface.svelte';
 	import { BREATH } from '$lib/ii/surface.js';
+	import Band from '$lib/ii/Band.svelte';
+	import { chromeOverBand } from '$lib/ii/band.js';
 	import Chrome from '$lib/ii/Chrome.svelte';
 	import Foot from '$lib/ii/Foot.svelte';
 	import CartDrawer from '$lib/shop/CartDrawer.svelte';
 	import { yen } from '$lib/shop/money.js';
 	import { page } from '$app/stores';
 	import { translator, localizePath } from '$lib/i18n.js';
+	import { onMount } from 'svelte';
 	export let data;
 
 	const SITE = 'https://sui-sari.hi-843.workers.dev';
@@ -24,6 +27,21 @@
 	);
 	let active = null;
 	$: shown = active ? data.products.filter((p) => p.category === active) : data.products;
+
+	// White over the band, ink once the chrome has left it — a fixed white
+	// header would otherwise disappear into the pale page below.
+	let overBand = true;
+
+	onMount(() => {
+		const sync = () => (overBand = chromeOverBand());
+		sync();
+		window.addEventListener('scroll', sync, { passive: true });
+		window.addEventListener('resize', sync);
+		return () => {
+			window.removeEventListener('scroll', sync);
+			window.removeEventListener('resize', sync);
+		};
+	});
 </script>
 
 <svelte:head>
@@ -33,16 +51,23 @@
 
 <CartDrawer settings={data.settings} />
 
-<div class="ii-page">
+<div class="ii-page shop-page">
 	<Surface study={BREATH} opacity={0.5} />
-	<Chrome tone="ink" />
 
-	<main class="ii-main shop">
-		<aside class="side">
-			<!-- English-only heading -->
-			<h1 class="ii-display" lang="en">{t('shop.title')}</h1>
+	<!-- the water across the top half, with the title set over it in white -->
+	<Band>
+		<!-- English-only heading -->
+		<h1 class="ii-display" lang="en">{t('shop.title')}</h1>
+	</Band>
 
-			{#if categories.length}
+	<Chrome tone={overBand ? 'over' : 'ink'} />
+
+	<main class="ii-main shop" class:has-side={categories.length}>
+		<!-- The aside is only the categories now that the title has moved onto the
+		     band, so it stays away entirely while the field is empty rather than
+		     holding a column open for nothing. -->
+		{#if categories.length}
+			<aside class="side">
 				<nav class="cats">
 					<button class="cat ii-body" class:on={active === null} on:click={() => (active = null)} lang="en">
 						All<span class="n ii-label">{data.products.length}</span>
@@ -56,8 +81,8 @@
 						>
 					{/each}
 				</nav>
-			{/if}
-		</aside>
+			</aside>
+		{/if}
 
 		<ul class="grid">
 			{#each shown as p (p.id)}
@@ -93,6 +118,17 @@
 </div>
 
 <style>
+	/* the band is positioned against the page, so the page has to be the
+	   containing block */
+	.shop-page {
+		position: relative;
+	}
+	/* the catalogue starts below the band rather than under ii.css's own top
+	   padding — the title lives on the band now */
+	.shop-page .ii-main {
+		padding-top: 50vh;
+	}
+
 	h1 {
 		margin-bottom: 44px;
 	}
@@ -123,6 +159,9 @@
 	.grid {
 		display: grid;
 		align-items: start;
+		/* the gap the title's own margin used to give, now that it has gone up
+		   onto the band and the grid meets the water directly */
+		margin-top: 44px;
 		width: 100vw;
 		margin-left: calc(-1 * var(--ii-gutter));
 		grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -204,9 +243,10 @@
 		h1 {
 			margin-bottom: 72px;
 		}
-		/* the catalogue moves right of a column that holds the title and the
-		   categories, and stays with the reader as the grid scrolls past */
-		.shop {
+		/* the catalogue moves right of the category column, which stays with the
+		   reader as the grid scrolls past. Only while there is one: without it
+		   the grid would sit in a 170px track. */
+		.shop.has-side {
 			display: grid;
 			grid-template-columns: 170px minmax(0, 1fr);
 			gap: 0 5vw;
@@ -224,14 +264,16 @@
 			gap: 10px;
 			margin: 0;
 		}
-		.empty,
-		.legal-link {
+		/* second track only while there is a first one */
+		.has-side .empty,
+		.has-side .legal-link {
 			grid-column: 2;
 		}
 
 		/* three even columns, narrower now that the aside takes its share */
 		.grid {
 			width: auto;
+			margin-top: 72px;
 			margin-left: 0;
 			grid-template-columns: repeat(3, minmax(0, 1fr));
 			gap: 84px 3vw;

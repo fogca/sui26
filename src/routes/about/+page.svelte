@@ -54,8 +54,8 @@
 					cosmetics, confectionery and beverages.
 				</p>
 				<p class="ii-body" lang="en">
-					Taking the extraction of plants and minerals as her guide,<br />
-					she hopes to weave the resonance that scents all creation.
+					Taking the extraction of plants and minerals as her guide, she hopes to weave
+					the resonance that scents all creation.
 				</p>
 				<p class="ii-body award" lang="en">
 					Minister of the Environment Award, Fragrance Contest
@@ -100,6 +100,12 @@
 	   leading, so the two languages would sit at different heights. */
 	/* `.ii [lang='ja']` is (0,2,0) and would hand the Japanese title 1.8
 	   leading, so the two languages would sit at different heights. */
+	/* the copy sets to 90% of the column on a phone — the full measure ran
+	   right to the gutter */
+	.copy {
+		width: 90%;
+	}
+
 	h1.title {
 		font-size: 32px;
 		line-height: 1.2;
@@ -111,9 +117,13 @@
 
 	.en p {
 		max-width: 348px;
-		font-size: 13px;
+		font-size: 14px;
 		line-height: 1.4;
-		letter-spacing: 0.03em;
+		letter-spacing: 0.025em;
+		/* the measure is narrow at this size, so the long words are allowed to
+		   break rather than leaving holes in the rag */
+		hyphens: auto;
+		-webkit-hyphens: auto;
 	}
 	/* one blank line, as the frame sets it */
 	.en p + p {
@@ -125,6 +135,9 @@
 	}
 	.ja.statement {
 		margin-top: 34px;
+	}
+	.ja.statement p {
+		font-size: 13.5px;
 	}
 	.ja p + p {
 		margin-top: 19.8px;
@@ -155,11 +168,18 @@
 			grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) minmax(0, 1fr);
 			gap: 0 6vw;
 			align-items: start;
+			/* the 90% measure is a phone setting */
+			width: auto;
 		}
 		.en p {
 			max-width: none;
 			font-size: 15px;
 			line-height: 1.35;
+			/* the tracking and the hyphenation are phone settings too — this
+			   column is wide enough to set without either */
+			letter-spacing: 0.03em;
+			hyphens: manual;
+			-webkit-hyphens: manual;
 		}
 		/* the credits keep the smaller .ii-jp size; only the statement grows */
 		.ja.statement p {
