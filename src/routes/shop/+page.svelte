@@ -240,6 +240,11 @@
 	}
 
 	@media screen and (min-width: 720px) {
+		/* the catalogue sits in the right of the screen, under the title on the
+		   band — which keeps the page's own left gutter */
+		.shop-page .ii-main {
+			padding-left: 35vw;
+		}
 		h1 {
 			margin-bottom: 72px;
 		}
