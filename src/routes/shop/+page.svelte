@@ -242,7 +242,7 @@
 		/* the catalogue sits in the right of the screen, under the title on the
 		   band — which keeps the page's own left gutter */
 		.shop-page .ii-main {
-			padding-left: 35vw;
+			padding-left: 25vw;
 		}
 		h1 {
 			margin-bottom: 72px;
@@ -280,7 +280,7 @@
 			margin-top: 72px;
 			margin-left: 0;
 			grid-template-columns: repeat(3, minmax(0, 1fr));
-			gap: 84px 3vw;
+			gap: 80px 20px;
 			--plate-pad: 0px;
 		}
 		.card:nth-child(3n + 1) {
