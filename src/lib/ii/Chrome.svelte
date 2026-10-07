@@ -5,52 +5,44 @@
 	//
 	// Measurements are the frames' own, in px at the 393pt artboard:
 	//   wordmark  left 24, top 23, 67 wide
-	//   tagline   centred on x 57, top 65, 6.4px
+	//   tagline   centred on x 57, top 65, 6.4px — the frames set this to
+	//             "Weaving the resonance / that scents all creation."; the
+	//             studio's line replaced it
 	//   nav       left 202, top 22, 12px, tracking 0.03em
 	//   cart      left 360, top 21, 16 wide
 	//
-	// The frames draw three links. Contact and the language switch are kept —
-	// the site has a working /contact and two languages, and dropping either
-	// from the only navigation on the page would break it.
+	// The three links the frames draw, and nothing else. Contact sits in the
+	// footer. There is no language switch either — every page carries English
+	// and Japanese together, so there is nothing to switch between.
 	import { page } from '$app/stores';
 	import { cart, cartOpen, cartDrawerMounted } from '$lib/shop/cart.js';
-	import { localizePath, splitLang, translator } from '$lib/i18n.js';
+	import { localizePath, translator } from '$lib/i18n.js';
 	import { goto } from '$app/navigation';
 
 	/** 'over' — white, on the field. 'ink' — for any surface that stays white. */
 	export let tone = 'over';
+	/** The wordmark takes its own tone where the two halves of the screen do not
+	 *  match — the product page fixes photography under the left half, so the
+	 *  mark sits on a shot while the nav sits on the pale surface. Defaults to
+	 *  the header's own tone. */
+	export let brandTone = null;
 
 	$: pale = tone === 'over';
-	$: wordmark = pale ? '/ii/wordmark-white.svg' : '/ii/wordmark-ink.svg';
+	$: brandPale = (brandTone ?? tone) === 'over';
+	$: wordmark = brandPale ? '/ii/wordmark-white.svg' : '/ii/wordmark-ink.svg';
 
 	$: lang = $page.data?.lang ?? 'ja';
 	$: t = translator(lang);
 	$: path = (p) => localizePath(p, lang);
 	$: home = path('/');
-	$: otherLangHref = localizePath(
-		splitLang($page.url.pathname).path,
-		lang === 'ja' ? 'en' : 'ja'
-	);
 
 	$: links = [
 		{ label: t('nav.fragrance'), href: path('/shop') },
 		{ label: t('nav.works'), href: path('/works') },
-		{ label: t('nav.about'), href: path('/about') },
-		{ label: t('nav.contact'), href: path('/contact') }
+		{ label: t('nav.about'), href: path('/about') }
 	];
 
 	$: count = $cart.reduce((s, i) => s + i.qty, 0);
-
-	/** Remember the pick for this tab session, so the pre-paint script in
-	 *  app.html doesn't send the reader back to the other language on the next
-	 *  visit to the bare entry point. */
-	function rememberLang() {
-		try {
-			sessionStorage.setItem('sui-lang', lang === 'ja' ? 'en' : 'ja');
-		} catch (e) {
-			// private mode / storage disabled — the URL still carries the language
-		}
-	}
 
 	/** Open the drawer where one is mounted; otherwise take the reader to the
 	 *  shop, which is where the drawer lives. */
@@ -61,10 +53,10 @@
 </script>
 
 <header class="chrome" class:ink={!pale}>
-	<a class="brand" href={home}>
+	<a class="brand" class:pale={brandPale} href={home}>
 		<img class="wordmark" src={wordmark} alt="SUI" width="67" height="34" />
 		<span class="ii-micro tag" lang="en">
-			Weaving the resonance<br />that scents all creation.
+			Olfactory artwork /<br />Phenomenon
 		</span>
 	</a>
 
@@ -72,12 +64,6 @@
 		{#each links as l}
 			<a class="ii-body" class:current={$page.url.pathname === l.href} href={l.href}>{l.label}</a>
 		{/each}
-		<a
-			class="ii-body lang"
-			href={otherLangHref}
-			hreflang={lang === 'ja' ? 'en' : 'ja'}
-			on:click={rememberLang}>{lang === 'ja' ? 'EN' : 'JA'}</a
-		>
 		<button class="cart" type="button" on:click={openCart} aria-label={t('shop.openCart')}>
 			<img src="/ii/cart.svg" alt="" width="16" height="15" class:inked={!pale} />
 			{#if count > 0}<span class="ii-micro count">{count}</span>{/if}
@@ -110,6 +96,11 @@
 		margin-top: 2px;
 		text-align: center;
 	}
+	/* a rule on the element itself, so it wins over the colour .chrome.ink
+	   hands down by inheritance */
+	.brand.pale {
+		color: #fff;
+	}
 	.wordmark {
 		width: 67px;
 		height: auto;
@@ -125,9 +116,6 @@
 		align-items: center;
 		gap: 10px;
 		margin-top: 1px;
-	}
-	.lang {
-		opacity: 0.7;
 	}
 	.current {
 		opacity: 0.55;
@@ -155,7 +143,7 @@
 
 	@media screen and (min-width: 720px) {
 		.chrome {
-			padding: 30px 3.4vw 0 4.4vw;
+			padding: 40px 50px;
 		}
 		.wordmark {
 			width: 86px;

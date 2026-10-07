@@ -4,6 +4,26 @@
 	import { afterNavigate } from '$app/navigation';
 	import { browser } from '$app/environment';
 	import { splitLang } from '$lib/i18n.js';
+	import Tune from '$lib/ii/Tune.svelte';
+
+	// ?tune mounts the colour bar — on the deployed site too, so the palette can
+	// be judged on an actual phone. It is remembered for the rest of the tab
+	// session, because the site's own links carry no query and the bar is
+	// useless if it falls off at the first navigation. ?tune=off puts it away.
+	// Client only: it has no business in the HTML a crawler is served.
+	const TUNE = 'sui-tune-on';
+	let tuning = false;
+
+	$: if (browser) {
+		const q = $page.url.searchParams.get('tune');
+		try {
+			if (q === 'off') sessionStorage.removeItem(TUNE);
+			else if (q !== null) sessionStorage.setItem(TUNE, '1');
+			tuning = sessionStorage.getItem(TUNE) === '1';
+		} catch {
+			tuning = q !== null && q !== 'off';
+		}
+	}
 
 	// The page is always rendered — including on the server, so crawlers and
 	// link previews see real content in both languages. Nothing gates the
@@ -16,35 +36,41 @@
 		/^\/shop\/edit(\/|$)|^\/log\/(edit|new|login)(\/|$)|^\/log\/[^/]+\/edit\/?$/;
 	$: isAdmin = ADMIN.test(splitLang($page.url.pathname).path);
 
-	// TypeSquare loads via a <script> in app.html, so the global may not exist
-	// yet when navigation callbacks fire. Poll briefly, then run.
-	// The v3 loader exposes `TypeSquareJS` (older docs say `Ts`), so accept
-	// either and call whichever rescan method that build provides.
-	function whenTypeSquareReady(cb, timeoutMs = 6000) {
-		const startedAt = performance.now();
-		const poll = () => {
-			const ts = window.TypeSquareJS || window.Ts;
-			if (ts && (typeof ts.loadFont === 'function' || typeof ts.loadFontAsync === 'function')) {
-				cb(ts);
-				return;
-			}
-			if (performance.now() - startedAt > timeoutMs) return; // give up silently
-			setTimeout(poll, 60);
-		};
-		poll();
+	// Akashi is delivered by TypeSquare as a dynamic subset: the loader scans
+	// the DOM once, then injects an @font-face whose URL encodes exactly the
+	// characters it found. After a client-side navigation that URL is stale, so
+	// any Japanese character the first page did not contain has no glyph and
+	// falls back — which is why a reload used to fix it.
+	//
+	// There is no rescan to call. `window.TypeSquareJS` is a configuration
+	// object (loadFontAsync / onFontLoaded / querySelector), not an API; the
+	// `loadFont()` this used to poll for never existed, so the old hook sat in a
+	// six-second poll and gave up silently every time. Re-running the loader is
+	// what works — verified in production: before, a Japanese run measured
+	// identically to the bare fallback; after, it does not.
+	let rescanning = false;
+
+	function rescanTypeSquare() {
+		if (rescanning) return;
+		const current = document.querySelector('script[src*="typesquare.com"]');
+		if (!current) return;
+		rescanning = true;
+		const src = current.src;
+		current.remove();
+		const next = document.createElement('script');
+		next.src = src;
+		next.charset = 'utf-8';
+		next.onload = next.onerror = () => (rescanning = false);
+		document.head.appendChild(next);
+		// Each run leaves its own @font-face behind. Only the last one declared
+		// is ever used and the others are never fetched, so they cost nothing
+		// worth a riskier cleanup mid-render.
 	}
 
 	afterNavigate((nav) => {
-		// SvelteKit navigates client-side, so TypeSquare never re-scans the new
-		// DOM on its own. Re-run the scan so newly rendered characters get their
-		// subset. (Only the back office still uses Akashi; the public pages are
-		// on the direction's own stack.)
 		if (!browser) return;
-		if (nav.type === 'enter') return; // first paint is handled by the loader itself
-		whenTypeSquareReady((ts) => {
-			if (typeof ts.loadFont === 'function') ts.loadFont();
-			else ts.loadFontAsync();
-		});
+		if (nav.type === 'enter') return; // the first paint is the loader's own
+		rescanTypeSquare();
 	});
 </script>
 
@@ -63,4 +89,9 @@
 			<slot />
 		</div>
 	{/key}
+{/if}
+
+<!-- outside .ii on purpose: the direction's type rules must not reach it -->
+{#if tuning}
+	<Tune />
 {/if}

@@ -3,7 +3,8 @@
 	// settings. The disclosure itself is never translated: on the English page
 	// the heading and the notice above it are English, then the Japanese
 	// original stands as a sub-heading with the rows beneath it in Japanese.
-	import Photo from '$lib/ii/Photo.svelte';
+	import Surface from '$lib/ii/Surface.svelte';
+	import { BREATH } from '$lib/ii/surface.js';
 	import Chrome from '$lib/ii/Chrome.svelte';
 	import Foot from '$lib/ii/Foot.svelte';
 	import { page } from '$app/stores';
@@ -17,31 +18,23 @@
 	$: t = translator(data.lang);
 	$: path = (q) => localizePath(q, data.lang);
 	$: jaPath = splitLang($page.url.pathname).path;
-	$: enPath = localizePath(jaPath, 'en');
 </script>
 
 <svelte:head>
 	<title>{t('shop.legal')} — {t('common.siteName')}</title>
-	<link rel="alternate" hreflang="ja" href="{SITE}{jaPath}" />
-	<link rel="alternate" hreflang="en" href="{SITE}{enPath}" />
+	<link rel="canonical" href="{SITE}{jaPath}" />
 </svelte:head>
 
 <div class="ii-page">
-	<div class="ii-surface">
-		<Photo sp={{ w: 2.2723, x: 0, y: 0 }} pc={{ w: 1.5, x: 0, y: 0 }} />
-	</div>
-	<Chrome variant="inner" tone="ink" />
+	<Surface study={BREATH} />
+	<Chrome tone="ink" />
 
 	<main class="ii-main">
-		{#if data.lang === 'en'}
 			<h1 class="ii-display title" lang="en">{t('shop.legal')}</h1>
 			<p class="ii-body notice" lang="en">{t('legal.jaNotice')}</p>
 			<!-- The statutory notice is a legal disclosure: the Japanese original is
 			     always shown, never an English rendering of it. -->
 			<h2 class="ii-lead ja-title" lang="ja">特定商取引法に基づく表記</h2>
-		{:else}
-			<h1 class="ii-display title" lang="ja">特定商取引法に基づく表記</h1>
-		{/if}
 
 		{#if rows.length}
 			<dl class="rows" lang="ja">

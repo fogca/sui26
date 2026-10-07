@@ -1,59 +1,85 @@
 <script>
-	// Shop index in the "II" direction: the inner-page shell (pale surface,
-	// symbol/wordmark chrome, signature foot) with the catalogue as a plain
-	// grid of plates. Presentation only — the load contract, the cart and the
-	// legal link are untouched.
-	import Photo from '$lib/ii/Photo.svelte';
+	// Fragrance — the catalogue, on the pale "breath" surface so ink type still
+	// reads over it. Each plate carries its own control: sold out, or add to
+	// bag, in the same place either way.
+	import Surface from '$lib/ii/Surface.svelte';
+	import { BREATH } from '$lib/ii/surface.js';
 	import Chrome from '$lib/ii/Chrome.svelte';
 	import Foot from '$lib/ii/Foot.svelte';
 	import CartDrawer from '$lib/shop/CartDrawer.svelte';
-	import CartButton from '$lib/shop/CartButton.svelte';
 	import { yen } from '$lib/shop/money.js';
 	import { page } from '$app/stores';
-	import { translator, localizePath, splitLang } from '$lib/i18n.js';
+	import { translator, localizePath } from '$lib/i18n.js';
 	export let data;
 
 	const SITE = 'https://sui-sari.hi-843.workers.dev';
 
 	$: t = translator(data.lang);
 	$: path = (p) => localizePath(p, data.lang);
-	$: jaPath = splitLang($page.url.pathname).path;
-	$: enPath = localizePath(jaPath, 'en');
+
+	// Built from the catalogue itself, so the aside appears the moment the back
+	// office starts filling the field in and stays away while it is empty.
+	$: categories = [...new Set(data.products.map((p) => p.category).filter(Boolean))].map(
+		(name) => ({ name, n: data.products.filter((p) => p.category === name).length })
+	);
+	let active = null;
+	$: shown = active ? data.products.filter((p) => p.category === active) : data.products;
 </script>
 
 <svelte:head>
 	<title>{t('shop.title')} — {t('common.siteName')}</title>
-	<link rel="alternate" hreflang="ja" href="{SITE}{jaPath}" />
-	<link rel="alternate" hreflang="en" href="{SITE}{enPath}" />
+	<link rel="canonical" href="{SITE}/shop" />
 </svelte:head>
 
-<CartButton />
 <CartDrawer settings={data.settings} />
 
 <div class="ii-page">
-	<div class="ii-surface">
-		<Photo sp={{ w: 2.2723, x: 0, y: 0 }} pc={{ w: 1.5, x: 0, y: 0 }} />
-	</div>
-	<Chrome variant="inner" tone="ink" />
+	<Surface study={BREATH} opacity={0.5} />
+	<Chrome tone="ink" />
 
 	<main class="ii-main shop">
-		<!-- English-only heading -->
-		<h1 class="ii-display" lang="en">{t('shop.title')}</h1>
+		<aside class="side">
+			<!-- English-only heading -->
+			<h1 class="ii-display" lang="en">{t('shop.title')}</h1>
 
-		<div class="grid">
-			{#each data.products as p (p.id)}
-				<a class="card" href={path(`/shop/${p.slug}`)}>
-					<div class="thumb" class:soldout={p.stock === 0}>
-						{#if p.image}<img src={p.image} alt={p.name} />{/if}
-						{#if p.stock === 0}<span class="so ii-label" lang="en">{t('common.soldOut')}</span>{/if}
-					</div>
-					<!-- product copy comes from the database in Japanese only -->
-					<span class="name ii-jp" lang="ja">{p.name}</span>
-					{#if p.spec}<span class="spec ii-label" lang="ja">{p.spec}</span>{/if}
-					<span class="price ii-body">{yen(p.price)}</span>
-				</a>
+			{#if categories.length}
+				<nav class="cats">
+					<button class="cat ii-body" class:on={active === null} on:click={() => (active = null)} lang="en">
+						All<span class="n ii-label">{data.products.length}</span>
+					</button>
+					{#each categories as c (c.name)}
+						<button
+							class="cat ii-body"
+							class:on={active === c.name}
+							on:click={() => (active = c.name)}
+							lang="ja">{c.name}<span class="n ii-label">{c.n}</span></button
+						>
+					{/each}
+				</nav>
+			{/if}
+		</aside>
+
+		<ul class="grid">
+			{#each shown as p (p.id)}
+				<li class="card">
+					<a class="plate" href={path(`/shop/${p.slug}`)}>
+						<div class="thumb">
+							{#if p.image}<img src={p.image} alt={p.name} />{/if}
+							<!-- on the plate itself, so the photograph is never dimmed -->
+							{#if p.stock === 0}
+								<span class="sold ii-label" lang="en">{t('common.soldOut')}</span>
+							{/if}
+						</div>
+						<!-- product copy comes from the database in Japanese only.
+						     The spec line is always rendered, empty or not: without it a
+						     card with no volume sits shorter than its neighbours. -->
+						<span class="name ii-jp" lang="ja">{p.name}</span>
+						<span class="spec ii-label" lang="ja">{p.spec || ''}</span>
+						<span class="price ii-body">{yen(p.price)}</span>
+					</a>
+				</li>
 			{/each}
-		</div>
+		</ul>
 
 		{#if data.products.length === 0}
 			<p class="empty ii-body ii-mute" lang={data.lang}>{t('shop.empty')}</p>
@@ -70,14 +96,50 @@
 	h1 {
 		margin-bottom: 44px;
 	}
+	.cats {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 10px 18px;
+		margin: -24px 0 40px;
+	}
+	.cat {
+		cursor: pointer;
+		opacity: 0.55;
+		transition: opacity 0.5s ease;
+	}
+	.cat.on,
+	.cat:hover {
+		opacity: 1;
+	}
+	.n {
+		margin-left: 6px;
+		vertical-align: super;
+	}
 
+	/* On a phone the catalogue alternates: one plate across the full width of
+	   the screen, then a pair, then one, then a pair. Three items make a cycle,
+	   so the first of every three takes both columns. The grid runs edge to
+	   edge; the captions keep an inset from their own plate. */
 	.grid {
 		display: grid;
-		grid-template-columns: minmax(0, 1fr);
-		gap: 52px 0;
+		align-items: start;
+		width: 100vw;
+		margin-left: calc(-1 * var(--ii-gutter));
+		grid-template-columns: repeat(2, minmax(0, 1fr));
+		gap: 52px 8px;
+		/* the page's own text margin, so a caption under a plate that reaches
+		   the edge of the screen still lines up with everything else */
+		--plate-pad: var(--ii-gutter);
+	}
+	.card:nth-child(3n + 1) {
+		grid-column: 1 / -1;
+	}
+	.card {
+		display: flex;
+		flex-direction: column;
 	}
 	/* .ii a is (0,1,1); this class carries the Svelte hash, so it wins */
-	.card {
+	.plate {
 		display: flex;
 		flex-direction: column;
 	}
@@ -94,31 +156,41 @@
 		height: 100%;
 		object-fit: cover;
 	}
-	/* the plate steps back so the notice can be read straight off it */
-	.thumb.soldout img {
-		opacity: 0.38;
-		filter: grayscale(1);
-	}
-	.so {
+
+	/* a small white chip on the photograph, 20px in from its corner. The
+	   photograph itself is left alone — a sold-out scent is still the picture
+	   someone came to look at. */
+	.sold {
 		position: absolute;
-		inset: 0;
-		display: flex;
-		align-items: center;
-		justify-content: center;
+		top: 20px;
+		left: 20px;
+		background: #fff;
 		color: var(--ii-ink);
+		padding: 5px 9px;
+		letter-spacing: 0.14em;
 	}
 
 	.name {
 		display: block;
 	}
-	.spec {
+	/* The image is flush to the edge of its plate; the words are not. The inset
+	   was declared as --plate-pad from the start but never applied, which is why
+	   every caption in the left column sat against the edge of the screen.
+	   .spec is here empty or not, so a card without a volume keeps the same
+	   height as one with it and the rows stay level. */
+	.name,
+	.spec,
+	.price {
 		display: block;
 		margin-top: 5px;
+		min-height: 1.4em;
+		padding-inline: var(--plate-pad);
 	}
 	.price {
 		display: block;
 		margin-top: 9px;
 	}
+
 
 	.empty {
 		margin-top: 4px;
@@ -132,18 +204,45 @@
 		h1 {
 			margin-bottom: 72px;
 		}
+		/* the catalogue moves right of a column that holds the title and the
+		   categories, and stays with the reader as the grid scrolls past */
+		.shop {
+			display: grid;
+			grid-template-columns: 170px minmax(0, 1fr);
+			gap: 0 5vw;
+			align-items: start;
+		}
+		.side {
+			position: sticky;
+			top: 22vh;
+		}
+		h1 {
+			margin-bottom: 36px;
+		}
+		.cats {
+			flex-direction: column;
+			gap: 10px;
+			margin: 0;
+		}
+		.empty,
+		.legal-link {
+			grid-column: 2;
+		}
+
+		/* three even columns, narrower now that the aside takes its share */
 		.grid {
-			grid-template-columns: repeat(2, minmax(0, 1fr));
-			gap: 76px 4.4vw;
+			width: auto;
+			margin-left: 0;
+			grid-template-columns: repeat(3, minmax(0, 1fr));
+			gap: 84px 3vw;
+			--plate-pad: 0px;
+		}
+		.card:nth-child(3n + 1) {
+			grid-column: auto;
+			--plate-pad: 0px;
 		}
 		.legal-link {
 			margin-top: 120px;
-		}
-	}
-	/* three across only once a card would otherwise be wider than its plate */
-	@media screen and (min-width: 1180px) {
-		.grid {
-			grid-template-columns: repeat(3, minmax(0, 1fr));
 		}
 	}
 </style>

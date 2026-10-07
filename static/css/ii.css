@@ -32,7 +32,7 @@
    exactly as before. VF18-21 refine outlines, add "endash", and widen
    every glyph's advance width by 5 units (2026-10-02); none of them touch
    U+00A5/U+FFE5. Verified with fontTools against
-   static/font/Ango-VF25.woff2. */
+   static/font/Ango-VF26.woff2. */
 @font-face {
 	font-family: "IIYen";
 	src: local("Hiragino Sans"), local("HiraginoSans-W3"), local("Hiragino Kaku Gothic ProN W3"),
@@ -49,12 +49,13 @@
 	--ii-bg: #ffffff;
 	--ii-rule: rgba(83, 103, 116, 0.28);
 	--ii-rule-soft: rgba(83, 103, 116, 0.14);
+	--ii-fill-out: rgba(83, 103, 116, 0.42);
 	--ii-mute: rgba(83, 103, 116, 0.62);
 	--ii-alert: #9a6b2f;
 
 	/* Ango, held to a single weight: Thin 250 everywhere (2026-10-06).
 	   Both tokens stay so the scale can be split again by changing one line;
-	   they simply resolve to the same stop for now. Ango-VF25 names 250 "Thin"
+	   they simply resolve to the same stop for now. Ango-VF26 names 250 "Thin"
 	   on a wght axis of 150-950. */
 	--ii-thin: 250;
 	--ii-light: 250;
@@ -269,6 +270,17 @@
 	max-width: 348px;
 }
 
+/* A page sitting on the water surface. Everything that was keyed to ink has
+   to flip, not just the body colour — hairlines and muted labels included, or
+   they stay a blue-grey that is all but invisible on a blue-grey field. */
+.ii .on-field {
+	color: #fff;
+	--ii-ink: #ffffff;
+	--ii-mute: rgba(255, 255, 255, 0.72);
+	--ii-rule: rgba(255, 255, 255, 0.38);
+	--ii-rule-soft: rgba(255, 255, 255, 0.2);
+}
+
 .ii .ii-rule {
 	height: 1px;
 	background: var(--ii-rule);
@@ -300,6 +312,31 @@
 .ii .ii-btn:disabled:hover {
 	background: transparent;
 	color: inherit;
+}
+
+/* The shop's primary actions are filled rather than drawn: add to bag, sold
+   out, checkout. Keyed to --ii-ink, so it belongs on the pale surfaces where
+   ink is dark — on a field page --ii-ink is white and this would vanish. */
+.ii .ii-btn-fill {
+	background: var(--ii-ink);
+	border-color: var(--ii-ink);
+	color: #fff;
+}
+.ii .ii-btn-fill:hover {
+	background: var(--ii-ink);
+	color: #fff;
+	opacity: 0.78;
+}
+/* Sold out keeps the shape, the fill and the white lettering — it is the fill
+   that steps back, not the type. Fading the whole control instead turns the
+   white text grey, which is not what it is meant to say. */
+.ii .ii-btn-fill.is-out,
+.ii .ii-btn-fill.is-out:hover {
+	background: var(--ii-fill-out);
+	border-color: transparent;
+	color: #fff;
+	opacity: 1;
+	cursor: default;
 }
 
 /* Underlined field — contact form, quantity, anything typed into. */
@@ -408,8 +445,9 @@
 
 @media screen and (min-width: 720px) {
 	.ii {
-		/* the SP gutter would run to 77px at 1440; hold it near the frame's feel */
-		--ii-gutter: 4.4vw;
+		/* fixed on desktop rather than proportional, so the measure does not
+		   drift with the window */
+		--ii-gutter: 50px;
 		font-size: 13px;
 	}
 	.ii .ii-display {
@@ -431,7 +469,7 @@
 		font-size: 11px;
 	}
 	.ii .ii-main {
-		padding-top: 22vh;
+		padding: 30vh var(--ii-gutter) 0;
 	}
 	.ii .ii-measure {
 		max-width: 46ch;

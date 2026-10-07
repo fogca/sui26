@@ -28,7 +28,7 @@
 <svelte:window on:keydown={onKey} />
 
 <div class="ii-page">
-	<Chrome variant="inner" tone="ink" />
+	<Chrome tone="ink" />
 
 	<main class="ii-main">
 		<h1 class="ii-display" lang="en">Field</h1>

@@ -148,7 +148,7 @@
 				</div>
 			</Section>
 		{:else if tab === 'shipping'}
-			<Section title="配送" desc="カートと商品ページの送料表示は、この設定から計算されます。">
+			<Section title="配送" desc="バッグと商品ページの送料表示は、この設定から計算されます。">
 				<div class="grid">
 					<Field label="送料（全国一律・円）" error={errFor('shipping_fee')}>
 						<input
@@ -239,7 +239,7 @@
 						</select>
 					</Field>
 				</div>
-				<Field label="価格の注記" hint="商品ページ・カートに表示されます">
+				<Field label="価格の注記" hint="商品ページ・バッグに表示されます">
 					<input class="a-input" name="tax_note" value={s.tax_note} />
 				</Field>
 			</Section>

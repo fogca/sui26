@@ -13,6 +13,9 @@ export async function load({ platform }) {
 			spec: p.spec,
 			price: p.price,
 			stock: p.stock,
+			// empty for every item today; the aside only appears once the back
+			// office has filled some in
+			category: p.category ?? '',
 			image: p.images[0] ?? null
 		})),
 		settings: { shipping_fee: settings.shipping_fee, free_over: settings.free_over }

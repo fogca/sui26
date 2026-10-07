@@ -1,62 +1,165 @@
 <script>
+	import { onMount } from 'svelte';
 	// Product detail in the "II" direction. Every piece of commerce behaviour is
 	// the one that was here before — gallery index, quantity bound to maxQty,
 	// addToCart, the low-stock and sold-out branches, the shipping and payment
 	// notes. Only the presentation changed.
-	import Photo from '$lib/ii/Photo.svelte';
+	import Surface from '$lib/ii/Surface.svelte';
+	import { BREATH } from '$lib/ii/surface.js';
 	import Chrome from '$lib/ii/Chrome.svelte';
 	import Foot from '$lib/ii/Foot.svelte';
 	import CartDrawer from '$lib/shop/CartDrawer.svelte';
-	import CartButton from '$lib/shop/CartButton.svelte';
 	import { addToCart } from '$lib/shop/cart.js';
 	import { yen } from '$lib/shop/money.js';
 	import { page } from '$app/stores';
-	import { translator, localizePath, splitLang } from '$lib/i18n.js';
+	import { translator, localizePath, splitLang, both } from '$lib/i18n.js';
 	export let data;
 
 	const SITE = 'https://sui-sari.hi-843.workers.dev';
 
 	$: p = data.product;
 	let qty = 1;
-	let mainIndex = 0;
+	// which shot the strip has snapped to — for the counter under it
+	let shot = 0;
+
+	function onGalleryScroll(e) {
+		const el = e.currentTarget;
+		if (!el.clientWidth) return;
+		shot = Math.round(el.scrollLeft / el.clientWidth);
+	}
+
+	// On a wide screen the strip becomes a half-screen panel that does not move;
+	// the page's own scroll is what changes which shot is showing. The panel is
+	// only built client side, so the phone layout is what the server renders and
+	// what a crawler sees.
+	let wide = false;
+	// Where the panel is between its shots, as a fraction: 0 is the first, 1.5
+	// is halfway between the second and the third. Neighbouring shots cross-fade
+	// by that fraction.
+	//
+	// Scrolling sets where the panel is heading, not where it is. Tying the
+	// fraction straight to the scroll offset made the shots snap past as fast as
+	// the reader could flick — on a short product the whole set went by in one
+	// gesture. The panel eases toward the target on its own clock instead, so it
+	// always takes its time, however briskly the page is scrolled.
+	let pos = 0;
+	let target = 0;
+	let raf = 0;
+	let last = 0;
+
+	/** Seconds for the dissolve to all but finish after the scroll settles. */
+	const EASE = 0.6;
+
+	function measure() {
+		const span = document.documentElement.scrollHeight - window.innerHeight;
+		const t = span > 0 ? Math.min(1, Math.max(0, window.scrollY / span)) : 0;
+		return t * (p.images.length - 1);
+	}
+
+	/** Opacity of shot `i` with the panel at `at`.
+	 *
+	 *  The shot being left stays opaque and the next one fades in over it.
+	 *  Fading both — one down, one up — leaves the pair covering only 75% at
+	 *  the crossover, so the panel's own backing washed through the middle of
+	 *  every change. Only the incoming shot carries the fade. */
+	function fade(i, at) {
+		const base = Math.floor(at);
+		if (i <= base) return 1;
+		if (i === base + 1) return at - base;
+		return 0;
+	}
+
+	function tick(now) {
+		const dt = Math.min(0.1, (now - last) / 1000);
+		last = now;
+		pos += (target - pos) * (1 - Math.exp(-dt / EASE));
+		if (Math.abs(target - pos) > 0.002) {
+			raf = requestAnimationFrame(tick);
+		} else {
+			pos = target;
+			raf = 0;
+		}
+	}
+
+	function onScroll() {
+		if (!wide || p.images.length < 2) return;
+		target = measure();
+		if (!raf) {
+			last = performance.now();
+			raf = requestAnimationFrame(tick);
+		}
+	}
+
+	onMount(() => {
+		const mq = window.matchMedia('(min-width: 720px)');
+		const sync = () => {
+			wide = mq.matches;
+			if (wide && p.images.length > 1) {
+				// arrive already in place rather than easing in from the first shot
+				target = measure();
+				pos = target;
+			}
+			onScroll();
+		};
+		sync();
+		mq.addEventListener('change', sync);
+		window.addEventListener('scroll', onScroll, { passive: true });
+		return () => {
+			mq.removeEventListener('change', sync);
+			window.removeEventListener('scroll', onScroll);
+			if (raf) cancelAnimationFrame(raf);
+		};
+	});
 	$: maxQty = Math.min(9, p.stock);
 
 	$: t = translator(data.lang);
 	$: path = (q) => localizePath(q, data.lang);
 	$: jaPath = splitLang($page.url.pathname).path;
-	$: enPath = localizePath(jaPath, 'en');
+	$: bag = both('shop.addToCart');
 </script>
 
 <svelte:head>
 	<title>{p.name} — {t('common.siteName')}</title>
-	<link rel="alternate" hreflang="ja" href="{SITE}{jaPath}" />
-	<link rel="alternate" hreflang="en" href="{SITE}{enPath}" />
+	<link rel="canonical" href="{SITE}{jaPath}" />
 </svelte:head>
 
-<CartButton />
 <CartDrawer settings={data.settings} />
 
 <div class="ii-page">
-	<div class="ii-surface">
-		<Photo sp={{ w: 2.2723, x: 0, y: 0 }} pc={{ w: 1.5, x: 0, y: 0 }} />
-	</div>
-	<Chrome variant="inner" tone="ink" />
+	<Surface study={BREATH} opacity={0.5} />
+	<!-- the mark is over the fixed shot once the panel is up, the nav is not -->
+	<Chrome tone="ink" brandTone={wide ? 'over' : 'ink'} />
 
-	<main class="ii-main product">
-		<div class="gallery">
-			{#if p.images[mainIndex]}
-				<img class="main" src={p.images[mainIndex]} alt={p.name} />
-			{/if}
-			{#if p.images.length > 1}
-				<div class="thumbs">
-					{#each p.images as img, i}
-						<button class:active={i === mainIndex} on:click={() => (mainIndex = i)}>
-							<img src={img} alt="" />
-						</button>
-					{/each}
-				</div>
-			{/if}
+	<main class="ii-main product" style="--shots:{p.images.length}">
+		{#if wide}
+			<!-- half the screen, fixed, cross-fading as the page scrolls -->
+			<div class="panel" aria-hidden="true">
+				{#each p.images as img, i}
+					<img
+						class="pane"
+						src={img}
+						alt=""
+						style="opacity:{fade(i, pos)}"
+					/>
+				{/each}
+			</div>
+		{/if}
+
+		<!-- One strip of shots. On a phone it is the full width of the screen and
+		     snaps one image at a time; on a wide screen the same strip simply
+		     stacks, which is what the sticky information column is built for. -->
+		<div class="gallery" on:scroll={onGalleryScroll}>
+			{#each p.images as img, i}
+				<figure class="shot">
+					<img src={img} alt={i === 0 ? p.name : ''} loading={i === 0 ? 'eager' : 'lazy'} />
+				</figure>
+			{/each}
 		</div>
+		{#if p.images.length > 1}
+			<p class="count ii-label" aria-hidden="true">
+				{String(shot + 1).padStart(2, '0')} / {String(p.images.length).padStart(2, '0')}
+			</p>
+		{/if}
 
 		<div class="info">
 			<!-- name / spec / description are Japanese-only database copy -->
@@ -66,9 +169,6 @@
 				{yen(p.price)} <span class="tax ii-label" lang={data.lang}>{t('shop.taxIncluded')}</span>
 			</p>
 
-			{#if data.lang === 'en'}
-				<p class="ja-only ii-body ii-mute" lang="en">{t('common.jaOnly')}</p>
-			{/if}
 			<p class="desc ii-jp" lang="ja">{p.description}</p>
 
 			{#if p.stock > 0}
@@ -86,15 +186,16 @@
 							{/each}
 						</select>
 					</label>
-					<button class="ii-btn add" lang={data.lang} on:click={() => addToCart(p.id, qty)}>
-						{t('shop.addToCart')}
+					<button class="ii-btn ii-btn-fill add" on:click={() => addToCart(p.id, qty)}>
+						<span lang="en">{bag.en}</span>
+						<span class="ja" lang="ja">{bag.ja}</span>
 					</button>
 				</div>
 				{#if p.stock <= 5}
 					<p class="low-stock ii-body" lang={data.lang}>{t('shop.remaining', { n: p.stock })}</p>
 				{/if}
 			{:else}
-				<p class="soldout ii-label" lang="en">{t('common.soldOut')}</p>
+				<span class="ii-btn ii-btn-fill is-out soldout" lang="en">{t('common.soldOut')}</span>
 			{/if}
 
 			<div class="notes" lang={data.lang}>
@@ -107,42 +208,43 @@
 				<p class="ii-label">{t('shop.paymentMethods')}</p>
 			</div>
 
-			<a class="back ii-body" href={path('/shop')} lang="en">← {t('shop.title')}</a>
 		</div>
 	</main>
 
-	<Foot />
+	<div class="foot-col">
+		<Foot />
+	</div>
 </div>
 
 <style>
-	.gallery .main {
-		width: 100%;
-		aspect-ratio: 4 / 5;
-		object-fit: cover;
-	}
-	.thumbs {
+	/* full width of the screen: .ii-main holds the gutter, so the strip is
+	   pulled back out of it */
+	.gallery {
 		display: flex;
-		flex-wrap: wrap;
-		gap: 8px;
-		margin-top: 8px;
+		width: 100vw;
+		margin-left: calc(-1 * var(--ii-gutter));
+		overflow-x: auto;
+		overscroll-behavior-x: contain;
+		scroll-snap-type: x mandatory;
+		-webkit-overflow-scrolling: touch;
+		scrollbar-width: none;
 	}
-	.thumbs button {
-		width: 62px;
-		aspect-ratio: 1;
-		overflow: hidden;
-		padding: 0;
-		opacity: 0.4;
-		cursor: pointer;
-		transition: opacity 0.5s ease;
+	.gallery::-webkit-scrollbar {
+		display: none;
 	}
-	.thumbs button.active,
-	.thumbs button:hover {
-		opacity: 1;
+	.shot {
+		flex: 0 0 100vw;
+		scroll-snap-align: start;
+		aspect-ratio: 4 / 5;
+		margin: 0;
 	}
-	.thumbs img {
+	.shot img {
 		width: 100%;
 		height: 100%;
 		object-fit: cover;
+	}
+	.count {
+		margin-top: 12px;
 	}
 
 	.info {
@@ -162,17 +264,10 @@
 	.tax {
 		margin-left: 6px;
 	}
-	/* note shown above Japanese-only product copy on the English pages */
-	.ja-only {
-		margin-top: 34px;
-	}
 	.desc {
 		margin-top: 34px;
 		white-space: pre-line;
 		max-width: 348px;
-	}
-	.ja-only + .desc {
-		margin-top: 10px;
 	}
 
 	.buy-row {
@@ -212,8 +307,22 @@
 		margin-top: 14px;
 		color: var(--ii-alert);
 	}
+	/* sold out takes the button's shape so the control sits in one place
+	   whatever the state — it just is not something you can press */
 	.soldout {
-		margin-top: 44px;
+		display: block;
+		margin-top: 32px;
+		max-width: 28ch;
+		letter-spacing: 0.18em;
+	}
+	.add {
+		display: flex;
+		align-items: baseline;
+		justify-content: center;
+		gap: 10px;
+	}
+	.add .ja {
+		font-size: 11px;
 	}
 
 	.notes {
@@ -222,31 +331,58 @@
 	.notes p + p {
 		margin-top: 6px;
 	}
-	.back {
-		display: inline-block;
-		margin-top: 56px;
-		color: var(--ii-mute);
-	}
 
 	@media screen and (min-width: 720px) {
+		.ii-main.product {
+			/* against the fixed panel the column wants more breathing room than
+			   the rest of the site's 50px gutter */
+			padding-inline: 100px;
+		}
 		.product {
-			display: grid;
-			/* the plate takes so much of the row at 1 : 1 that the copy wraps at
-			   ~27 characters; 1.2 : 1 puts the information back to a measure */
-			grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr);
-			gap: 0 5vw;
-			align-items: start;
+			/* the panel owns the left half of the screen, so the page is one
+			   column in the other half */
+			/* `.ii main` is width:100%, so the 50vw margin alone pushed the column
+			   off the right edge */
+			margin-left: 50vw;
+			width: 50vw;
+			display: block;
+			/* No invented height. The page is as long as what is written on it;
+			   the shots are paced across whatever scroll that gives. */
+			min-height: calc(100vh - 22vh);
 		}
-		.thumbs {
-			gap: 10px;
-			margin-top: 10px;
+		/* the foot sits under the reading column, clear of the fixed panel */
+		.foot-col {
+			margin-left: 50vw;
+			width: 50vw;
 		}
-		.thumbs button {
-			width: 78px;
+		/* the strip hands over to the fixed panel */
+		.gallery,
+		.count {
+			display: none;
+		}
+		.panel {
+			position: fixed;
+			top: 0;
+			left: 0;
+			width: 50vw;
+			height: 100vh;
+			height: 100dvh;
+			z-index: 1;
+			overflow: hidden;
+			background: var(--ii-rule-soft);
+		}
+		/* opacity is driven frame by frame from the eased position, so there is
+		   no CSS transition to fight it */
+		.pane {
+			position: absolute;
+			inset: 0;
+			width: 100%;
+			height: 100%;
+			object-fit: cover;
 		}
 		.info {
 			margin-top: 0;
-			max-width: 46ch;
+			max-width: none;
 		}
 		.desc {
 			max-width: none;

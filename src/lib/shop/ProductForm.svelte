@@ -380,7 +380,7 @@
 		</Field>
 	</Section>
 
-	<Section title="アイテム画像" desc="1枚目がメイン画像です。一覧・カート・OGP に使われます。">
+	<Section title="アイテム画像" desc="1枚目がメイン画像です。一覧・バッグ・OGP に使われます。">
 		<div class="imgs">
 			{#each images as img, i}
 				<div class="img">

@@ -1,49 +1,90 @@
 <script>
-	// The frames end on "scent studio" at the lower left and nothing else. The
-	// nav that used to live here has moved into the chrome, which is fixed now;
-	// the statutory link stays because the shop is legally required to carry it.
+	// The foot of the page: Contact, the signature, then the statutory link and
+	// the copyright line.
+	//
+	// 特定商取引法に基づく表記 is kept as its own labelled link rather than folded
+	// into a general "Legal" page — the Act requires the information to be
+	// displayed, and the guidance is that a buyer must be able to find it
+	// easily, which a generic label works against.
 	import { page } from '$app/stores';
-	import { localizePath, translator } from '$lib/i18n.js';
+	import { localizePath, translator, both } from '$lib/i18n.js';
 
-	/** The shop pages carry the legal link in their own flow already. */
+	/** The shop pages carry the statutory link in their own flow already. */
 	export let legal = true;
 
 	$: lang = $page.data?.lang ?? 'ja';
 	$: t = translator(lang);
 	$: path = (p) => localizePath(p, lang);
+	$: legalLabel = both('shop.legal');
 </script>
 
 <footer class="foot">
+	<nav class="top">
+		<a class="ii-body" href={path('/contact')} lang="en">{t('nav.contact')}</a>
+	</nav>
+
 	<span class="studio" lang="en">scent studio</span>
-	{#if legal}
-		<a class="ii-label legal" href={path('/shop/legal')} lang={lang}>{t('shop.legal')}</a>
-	{/if}
+
+	<div class="base">
+		<nav class="legal">
+			{#if legal}
+				<a class="ii-label" href={path('/shop/legal')}>
+					<span lang="en">{legalLabel.en}</span>
+					<span class="ja" lang="ja">{legalLabel.ja}</span>
+				</a>
+			{/if}
+		</nav>
+
+		<!-- Ango has no © yet, so that one character comes from Garamond -->
+		<span class="ii-label copy" lang="en">© SUI, 2026 All Rights Reserved</span>
+	</div>
 </footer>
 
 <style>
 	.foot {
 		position: relative;
 		z-index: 1;
-		display: flex;
-		align-items: baseline;
-		justify-content: space-between;
-		gap: 16px;
-		/* the frame puts the signature 32px off the foot of the page */
 		padding: 96px 21px calc(20px + env(safe-area-inset-bottom));
 	}
+	.top {
+		margin-bottom: 44px;
+	}
 	.studio {
+		display: block;
 		font-weight: var(--ii-thin);
 		font-size: 12px;
 		line-height: 1.2;
 		letter-spacing: 0.02em;
 	}
-	.legal {
-		opacity: 0.8;
+
+	.base {
+		display: flex;
+		align-items: baseline;
+		justify-content: space-between;
+		flex-wrap: wrap;
+		gap: 8px 16px;
+		margin-top: 14px;
 	}
+	.legal a {
+		display: flex;
+		align-items: baseline;
+		flex-wrap: wrap;
+		gap: 2px 10px;
+	}
+	.legal .ja {
+		opacity: 0.78;
+	}
+	.copy {
+		white-space: nowrap;
+	}
+
 
 	@media screen and (min-width: 720px) {
 		.foot {
-			padding: 140px 4.4vw 30px;
+			padding: 140px 50px 30px;
+		}
+		.top {
+			margin-bottom: 56px;
 		}
 		.studio {
 			font-size: 13px;

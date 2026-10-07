@@ -4,7 +4,8 @@
 	// written, and nothing found. All three are the page after a purchase, so
 	// the page stays quiet — one display line, then only what the reader has to
 	// keep.
-	import Photo from '$lib/ii/Photo.svelte';
+	import Surface from '$lib/ii/Surface.svelte';
+	import { BREATH } from '$lib/ii/surface.js';
 	import Chrome from '$lib/ii/Chrome.svelte';
 	import Foot from '$lib/ii/Foot.svelte';
 	import { yen } from '$lib/shop/money.js';
@@ -15,23 +16,18 @@
 	const SITE = 'https://sui-sari.hi-843.workers.dev';
 
 	$: t = translator(data.lang);
-	$: en = data.lang === 'en';
 	$: path = (q) => localizePath(q, data.lang);
 	$: jaPath = splitLang($page.url.pathname).path;
-	$: enPath = localizePath(jaPath, 'en');
 </script>
 
 <svelte:head>
 	<title>{t('thanks.title')} — {t('common.siteName')}</title>
-	<link rel="alternate" hreflang="ja" href="{SITE}{jaPath}" />
-	<link rel="alternate" hreflang="en" href="{SITE}{enPath}" />
+	<link rel="canonical" href="{SITE}{jaPath}" />
 </svelte:head>
 
 <div class="ii-page">
-	<div class="ii-surface">
-		<Photo sp={{ w: 2.2723, x: 0, y: 0 }} pc={{ w: 1.5, x: 0, y: 0 }} />
-	</div>
-	<Chrome variant="inner" tone="ink" />
+	<Surface study={BREATH} />
+	<Chrome tone="ink" />
 
 	<main class="ii-main">
 		<div class="col" lang={data.lang}>
@@ -52,16 +48,16 @@
 
 				<p class="ii-body total">{t('thanks.totalWithTax', { amount: yen(data.order.total) })}</p>
 
-				<p class="note" class:ii-body={en} class:ii-jp={!en}>
+				<p class="note ii-jp">
 					{t('thanks.mailTo', { email: data.order.email })}<br />
 					{t('thanks.trackingNote')}
 				</p>
 			{:else if data.pending}
 				<h1 class="ii-display">{t('thanks.paidTitle')}</h1>
-				<p class="note lone" class:ii-body={en} class:ii-jp={!en}>{t('thanks.paidNote')}</p>
+				<p class="note lone ii-jp">{t('thanks.paidNote')}</p>
 			{:else}
 				<h1 class="ii-display">{t('thanks.notFoundTitle')}</h1>
-				<p class="note lone" class:ii-body={en} class:ii-jp={!en}>{t('thanks.notFoundNote')}</p>
+				<p class="note lone ii-jp">{t('thanks.notFoundNote')}</p>
 			{/if}
 
 			<a class="ii-body back" href={path('/shop')}>{t('shop.backToShop')}</a>

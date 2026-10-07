@@ -131,8 +131,14 @@ const hex = (h) => {
  * deterministic screenshot possible — nothing here reads the wall clock.
  */
 export function createField(canvas, study) {
+	// alpha: true so that a cleared drawing buffer is transparent rather than
+	// opaque black. The buffer is reallocated — and comes back cleared — on
+	// every resize, and an opaque-black clear flashed through as a black frame
+	// whenever one was presented before the next draw. The shader always writes
+	// alpha 1.0, so nothing about the picture changes; what shows through a
+	// cleared buffer is now the palette colour the canvas sits on.
 	const gl =
-		canvas.getContext('webgl', { antialias: false, alpha: false, depth: false }) ||
+		canvas.getContext('webgl', { antialias: false, alpha: true, depth: false }) ||
 		canvas.getContext('experimental-webgl');
 	if (!gl) return null;
 
@@ -186,10 +192,25 @@ export function createField(canvas, study) {
 		bias: u('u_bias')
 	};
 
-	gl.uniform3fv(U.c0, hex(study.colors[0]));
-	gl.uniform3fv(U.c1, hex(study.colors[1]));
-	gl.uniform3fv(U.c2, hex(study.colors[2]));
-	gl.uniform3fv(U.c3, hex(study.colors[3]));
+	/** The four stops of the ramp, as hex strings. Separate from the rest of the
+	 *  setup so the debug bar can replace them on a live field. */
+	function setColors(c) {
+		gl.uniform3fv(U.c0, hex(c[0]));
+		gl.uniform3fv(U.c1, hex(c[1]));
+		gl.uniform3fv(U.c2, hex(c[2]));
+		gl.uniform3fv(U.c3, hex(c[3]));
+	}
+
+	/** Live overrides for the scalar uniforms, so a value can be tried on the
+	 *  running field instead of through a rebuild. */
+	function setParams(p) {
+		if (p.tilt != null) gl.uniform1f(U.tilt, p.tilt);
+		if (p.sweep != null) gl.uniform1f(U.sweep, p.sweep);
+		if (p.bias != null) gl.uniform1f(U.bias, p.bias);
+		if (p.contrast != null) gl.uniform1f(U.contrast, p.contrast);
+	}
+
+	setColors(study.colors);
 	gl.uniform1f(U.scale, study.scale);
 	gl.uniform1f(U.warp, study.warp);
 	gl.uniform2fv(U.drift, study.drift);
@@ -204,16 +225,19 @@ export function createField(canvas, study) {
 	let w = 0;
 	let h = 0;
 
+	/** Returns whether the buffer was actually reallocated — the caller has to
+	 *  draw into it again when it was, because it comes back cleared. */
 	function resize(cssW, cssH, dpr) {
 		const nw = Math.max(1, Math.round(cssW * dpr));
 		const nh = Math.max(1, Math.round(cssH * dpr));
-		if (nw === w && nh === h) return;
+		if (nw === w && nh === h) return false;
 		w = nw;
 		h = nh;
 		canvas.width = w;
 		canvas.height = h;
 		gl.viewport(0, 0, w, h);
 		gl.uniform2f(U.res, w, h);
+		return true;
 	}
 
 	function renderAt(seconds) {
@@ -230,5 +254,5 @@ export function createField(canvas, study) {
 		if (ext) ext.loseContext();
 	}
 
-	return { resize, renderAt, destroy };
+	return { resize, renderAt, setColors, setParams, destroy };
 }

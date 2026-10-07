@@ -6,7 +6,8 @@
 	// Here it runs the full deduped list on the About frame's pale surface,
 	// which is the direction's inner-page ground.
 	import { page } from '$app/stores';
-	import Photo from '$lib/ii/Photo.svelte';
+	import Surface from '$lib/ii/Surface.svelte';
+	import { BREATH } from '$lib/ii/surface.js';
 	import Chrome from '$lib/ii/Chrome.svelte';
 	import Foot from '$lib/ii/Foot.svelte';
 	import { works } from '$lib/works.js';
@@ -24,20 +25,16 @@
 
 	$: t = translator(data.lang);
 	$: jaPath = splitLang($page.url.pathname).path;
-	$: enPath = localizePath(jaPath, 'en');
 </script>
 
 <svelte:head>
 	<title>{t('works.title')} — {t('common.siteName')}</title>
-	<link rel="alternate" hreflang="ja" href="{SITE}{jaPath}" />
-	<link rel="alternate" hreflang="en" href="{SITE}{enPath}" />
+	<link rel="canonical" href="{SITE}{jaPath}" />
 </svelte:head>
 
 <div class="ii-page">
-	<div class="ii-surface">
-		<Photo sp={{ w: 2.2723, x: 0, y: 0 }} pc={{ w: 1.5, x: 0, y: 0 }} />
-	</div>
-	<Chrome variant="inner" tone="ink" />
+	<Surface study={BREATH} />
+	<Chrome tone="ink" />
 
 	<main class="ii-main">
 		<!-- English-only heading -->

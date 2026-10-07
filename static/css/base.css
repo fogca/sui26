@@ -75,14 +75,14 @@ html, body {
    edieresis/d/A/emdash/b/w/r/g/two/three; VF20 refined s further; VF21,
    2026-10-02, widens every glyph's advance width by 5 units — UPM 1000,
    so the font's own default spacing now reads roughly like
-   letter-spacing: 0.005em baked in, at the user's request; VF22-25
+   letter-spacing: 0.005em baked in, at the user's request; VF22-26
    refine u/q/A/N/P/b/d/s/W/p outlines — no compatibility change): A–Z, a–z, 0–9 and basic
    punctuation are complete, but £ ’ “ ” ; ! ? [ ] / & @ # % ↗ are not
    drawn yet, so Garamond stays next in the stack and the browser falls
    back per character. */
 @font-face {
     font-family: "Ango";
-    src: url("../font/Ango-VF25.woff2") format("woff2-variations");
+    src: url("../font/Ango-VF26.woff2") format("woff2-variations");
     font-weight: 150 950;
     font-style: normal;
     font-display: swap;

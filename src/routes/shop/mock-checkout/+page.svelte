@@ -72,7 +72,7 @@
 
 		{#if !cartData}
 			<p class="ii-jp empty" lang="ja">
-				カート情報が見つかりません。<a href="/shop">Shopへ戻る</a>
+				バッグの情報が見つかりません。<a href="/shop">Shopへ戻る</a>
 			</p>
 		{:else}
 			<h1 class="ii-display" lang="ja">お支払い</h1>

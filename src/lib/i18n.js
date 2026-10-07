@@ -33,7 +33,8 @@ const DICT = {
 	'nav.works': { ja: 'Works', en: 'Works' },
 	'nav.about': { ja: 'About', en: 'About' },
 	'nav.contact': { ja: 'Contact', en: 'Contact' },
-	'common.cart': { ja: 'Cart', en: 'Cart' },
+	// The shop says bag throughout — the control, the drawer and the notices.
+	'common.cart': { ja: 'Bag', en: 'Bag' },
 	'common.backTo': { ja: '一覧へ戻る', en: 'Back to list' },
 	'common.soldOut': { ja: 'SOLD OUT', en: 'SOLD OUT' },
 	'common.loading': { ja: '読み込み中…', en: 'Loading…' },
@@ -50,11 +51,11 @@ const DICT = {
 	// ---- shop ------------------------------------------------------------
 	'shop.title': { ja: 'Shop', en: 'Shop' },
 	'shop.empty': { ja: 'ただいま準備中です。', en: 'Nothing available just now.' },
-	'shop.legal': {
-		ja: '特定商取引法に基づく表記',
-		en: 'Legal notice (Specified Commercial Transactions Act)'
-	},
-	'shop.addToCart': { ja: 'カートに入れる', en: 'Add to cart' },
+	// There is no official English for 特定商取引法に基づく表記. "Legal notice" is
+	// what Shopify Japan uses for it and is what reads as a label; the Japanese
+	// is shown beside it, which is the wording the law is actually about.
+	'shop.legal': { ja: '特定商取引法に基づく表記', en: 'Legal notice' },
+	'shop.addToCart': { ja: 'バッグに追加', en: 'Add to bag' },
 	'shop.soldOutNote': { ja: '売り切れ', en: 'Sold out' },
 	'shop.remaining': { ja: '残り{n}点', en: 'Only {n} left' },
 	'shop.quantity': { ja: '数量', en: 'Quantity' },
@@ -63,7 +64,7 @@ const DICT = {
 	'shop.shipping': { ja: '送料', en: 'Shipping' },
 	'shop.shippingFree': { ja: '無料', en: 'Free' },
 	'shop.total': { ja: '合計', en: 'Total' },
-	'shop.cartEmpty': { ja: 'カートは空です。', en: 'Your cart is empty.' },
+	'shop.cartEmpty': { ja: 'バッグは空です。', en: 'Your bag is empty.' },
 	'shop.freeOverNote': {
 		ja: 'あと{amount}のお買い上げで送料無料です。',
 		en: 'Spend {amount} more for free shipping.'
@@ -89,7 +90,7 @@ const DICT = {
 	'shop.remove': { ja: '削除', en: 'Remove' },
 	'shop.qtyPlus': { ja: '数量を増やす', en: 'Increase quantity' },
 	'shop.qtyMinus': { ja: '数量を減らす', en: 'Decrease quantity' },
-	'shop.openCart': { ja: 'カートを開く', en: 'Open cart' },
+	'shop.openCart': { ja: 'バッグを開く', en: 'Open bag' },
 	'shop.closeCart': { ja: '閉じる', en: 'Close' },
 	'shop.error': { ja: 'エラーが発生しました', en: 'Something went wrong.' },
 
@@ -130,7 +131,8 @@ const DICT = {
 	'contact.subject.press': { ja: '取材・掲載について', en: 'Press and features' },
 	'contact.subject.other': { ja: 'その他', en: 'Something else' },
 
-	'about.title': { ja: '沙里 SARI', en: 'SARI' },
+	// the redrawn frame titles the page in English only
+	'about.title': { ja: 'SUI by Sari', en: 'SUI by Sari' },
 
 	// ---- works -----------------------------------------------------------
 	'works.title': { ja: 'Works', en: 'Works' },
@@ -168,6 +170,20 @@ const DICT = {
 };
 
 /** Return a translate function bound to a language. */
+/**
+ * Both languages for a key, English first.
+ *
+ * The site no longer switches language — every page carries English and
+ * Japanese together — so this is what most copy goes through. Where an entry
+ * reads the same in both, or only one of them makes sense, callers show the one.
+ */
+export function both(key, vars) {
+	const t = (lang) => translator(lang)(key, vars);
+	const en = t('en');
+	const ja = t('ja');
+	return { en, ja, same: en === ja };
+}
+
 export function translator(lang) {
 	const l = LANGS.includes(lang) ? lang : DEFAULT_LANG;
 	return (key, vars) => {

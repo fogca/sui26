@@ -5,7 +5,8 @@
 	//
 	// Presentation only: the load contract, the keyed each block, the empty
 	// state and the English-only "Japanese entries" notice are untouched.
-	import Photo from '$lib/ii/Photo.svelte';
+	import Surface from '$lib/ii/Surface.svelte';
+	import { BREATH } from '$lib/ii/surface.js';
 	import Chrome from '$lib/ii/Chrome.svelte';
 	import Foot from '$lib/ii/Foot.svelte';
 	import { page } from '$app/stores';
@@ -17,27 +18,20 @@
 	$: t = translator(data.lang);
 	$: path = (q) => localizePath(q, data.lang);
 	$: jaPath = splitLang($page.url.pathname).path;
-	$: enPath = localizePath(jaPath, 'en');
 </script>
 
 <svelte:head>
 	<title>{t('log.title')} — {t('common.siteName')}</title>
-	<link rel="alternate" hreflang="ja" href="{SITE}{jaPath}" />
-	<link rel="alternate" hreflang="en" href="{SITE}{enPath}" />
+	<link rel="canonical" href="{SITE}{jaPath}" />
 </svelte:head>
 
 <div class="ii-page">
-	<div class="ii-surface">
-		<Photo sp={{ w: 2.2723, x: 0, y: 0 }} pc={{ w: 1.5, x: 0, y: 0 }} />
-	</div>
-	<Chrome variant="inner" tone="ink" />
+	<Surface study={BREATH} />
+	<Chrome tone="ink" />
 
 	<main class="ii-main">
 		<h1 class="ii-display" lang="en">{t('log.title')}</h1>
 
-		{#if data.lang === 'en' && data.posts.length}
-			<p class="ii-body note" lang="en">{t('log.jaOnlyIndex')}</p>
-		{/if}
 
 		<ul class="list">
 			{#each data.posts as post (post.slug)}
@@ -69,12 +63,6 @@
 		margin-bottom: 44px;
 	}
 
-	/* note shown above the Japanese-only entry list on the English page */
-	.note {
-		margin-top: -22px;
-		margin-bottom: 40px;
-		color: var(--ii-mute);
-	}
 	.empty {
 		color: var(--ii-mute);
 	}
@@ -118,10 +106,6 @@
 	@media screen and (min-width: 720px) {
 		h1 {
 			margin-bottom: 64px;
-		}
-		.note {
-			margin-top: -32px;
-			margin-bottom: 56px;
 		}
 		.list {
 			max-width: 640px;

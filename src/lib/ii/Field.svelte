@@ -65,8 +65,16 @@
 	function measure() {
 		if (!field || !box) return;
 		const r = box.getBoundingClientRect();
-		field.resize(r.width, r.height, Math.min(window.devicePixelRatio || 1, dpr));
-		if (!running) field.renderAt(elapsed);
+		const reallocated = field.resize(
+			r.width,
+			r.height,
+			Math.min(window.devicePixelRatio || 1, dpr)
+		);
+		// A resize hands back a cleared buffer. Leaving it for the next capped
+		// frame puts up to 33ms of empty buffer on screen, which is a flicker
+		// while a window is being dragged and a blink when a phone's address bar
+		// collapses. Draw into it in the same task instead.
+		if (reallocated || !running) field.renderAt(elapsed);
 	}
 
 	onMount(() => {
@@ -106,6 +114,17 @@
 			},
 			resume: () => {
 				sync();
+			},
+			// for the ?tune debug bar: the study's own stops, and a way to
+			// replace them on the running field
+			colors: study.colors.slice(),
+			setColors: (c) => {
+				field.setColors(c);
+				if (!running) field.renderAt(elapsed);
+			},
+			setParams: (p) => {
+				field.setParams(p);
+				if (!running) field.renderAt(elapsed);
 			}
 		};
 

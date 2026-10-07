@@ -10,7 +10,7 @@ export async function POST({ request, platform, url }) {
 	const body = await request.json().catch(() => null);
 	const rawItems = body?.items;
 	if (!Array.isArray(rawItems) || rawItems.length === 0 || rawItems.length > 20) {
-		throw error(400, 'カートが空です');
+		throw error(400, 'バッグが空です');
 	}
 
 	const db = platform.env.DB;

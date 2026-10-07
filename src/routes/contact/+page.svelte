@@ -8,10 +8,11 @@
 	// language; the copy itself is the studio's existing contact text in
 	// i18n.js, not new writing.
 	import { page } from '$app/stores';
-	import Photo from '$lib/ii/Photo.svelte';
+	import Surface from '$lib/ii/Surface.svelte';
+	import { BREATH } from '$lib/ii/surface.js';
 	import Chrome from '$lib/ii/Chrome.svelte';
 	import Foot from '$lib/ii/Foot.svelte';
-	import { translator, localizePath, splitLang } from '$lib/i18n.js';
+	import { translator, both, localizePath, splitLang } from '$lib/i18n.js';
 
 	export let data;
 
@@ -28,20 +29,20 @@
 	let message = '';
 
 	$: t = translator(data.lang);
+	$: lead = both('contact.lead');
 	// hreflang pair for this page, derived from the un-prefixed route
 	$: jaPath = splitLang($page.url.pathname).path;
-	$: enPath = localizePath(jaPath, 'en');
 
 	// Japanese body copy is set in the gothic at its own measure; English takes
 	// the Latin body size. Applied with class: directives rather than an
 	// interpolated string so Svelte's scoped-CSS analysis can still see them.
-	$: en = data.lang === 'en';
 
 	function send() {
-		// punctuation, not copy: the label separator and the subject divider
-		const sep = data.lang === 'en' ? ': ' : '：';
-		const divider = data.lang === 'en' ? ' — ' : '｜';
-		const subjectLabel = t('contact.subject.' + subjectKey);
+		// the draft is addressed to the studio, who read Japanese, so its
+		// labels and punctuation are Japanese whatever the reader was shown
+		const sep = '：';
+		const divider = '｜';
+		const subjectLabel = both('contact.subject.' + subjectKey).ja;
 
 		const body = [
 			`${t('contact.name')}${sep}${name}`,
@@ -62,28 +63,21 @@
 
 <svelte:head>
 	<title>{t('contact.title')} — {t('common.siteName')}</title>
-	<link rel="alternate" hreflang="ja" href="{SITE}{jaPath}" />
-	<link rel="alternate" hreflang="en" href="{SITE}{enPath}" />
+	<link rel="canonical" href="{SITE}{jaPath}" />
 </svelte:head>
 
 <div class="ii-page">
-	<div class="ii-surface">
-		<Photo sp={{ w: 2.2723, x: 0, y: 0 }} pc={{ w: 1.5, x: 0, y: 0 }} />
-	</div>
-	<Chrome variant="inner" tone="ink" />
+	<Surface study={BREATH} />
+	<Chrome tone="ink" />
 
 	<main class="ii-main">
 		<!-- the title reads the same in both languages -->
 		<h1 class="ii-display" lang="en">{t('contact.title')}</h1>
 
-		<p
-			class="ii-measure lead"
-			class:ii-body={en}
-			class:ii-jp={!en}
-			lang={data.lang}
-		>
-			{t('contact.lead')}
-		</p>
+		<div class="ii-measure lead">
+			<p class="ii-body en" lang="en">{lead.en}</p>
+			<p class="ii-jp ja" lang="ja">{lead.ja}</p>
+		</div>
 
 		<form class="ii-measure form" on:submit|preventDefault={send}>
 			<label class="ii-field field">
@@ -112,7 +106,7 @@
 
 			<button class="ii-btn send" type="submit" lang={data.lang}>{t('contact.send')}</button>
 
-			<p class="ii-mute note" class:ii-body={en} class:ii-jp={!en} lang={data.lang}>
+			<p class="ii-mute note ii-jp" lang={data.lang}>
 				{t('contact.note')}
 			</p>
 		</form>
@@ -126,17 +120,17 @@
 		margin-bottom: 49px;
 	}
 	/* the lead is authored with hard line breaks in i18n.js */
+	.lead p {
+		white-space: pre-line;
+	}
+	.lead .ja {
+		margin-top: 20px;
+	}
 	.lead {
 		white-space: pre-line;
 	}
 	/* pinned here because `.ii [lang='ja']` also sets a leading, and load order
 	   between it and this component's sheet is not something to rely on */
-	.lead.ii-body {
-		line-height: 1.35;
-	}
-	.lead.ii-jp {
-		line-height: 1.8;
-	}
 
 	/* the measure comes from .ii-measure on the element */
 	.form {

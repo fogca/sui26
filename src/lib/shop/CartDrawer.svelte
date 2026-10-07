@@ -129,7 +129,7 @@
 
 			{#if errorMsg}<p class="err ii-body" lang={lang}>{errorMsg}</p>{/if}
 
-			<button class="ii-btn checkout" lang={lang} on:click={checkout} disabled={busy}>
+			<button class="ii-btn ii-btn-fill checkout" lang={lang} on:click={checkout} disabled={busy}>
 				{busy ? t('shop.checkoutBusy') : t('shop.checkout')}
 			</button>
 			<p class="pay-note" lang={lang}>{t('shop.payNote')}</p>
