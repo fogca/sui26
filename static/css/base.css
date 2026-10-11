@@ -69,20 +69,17 @@ html, body {
 --------------------------------------------------------------------------- */
 /* Ango (formerly Elio — renamed 2026-10-03) — August Type Foundry's own variable face (2 masters, wght 150–950;
    named stops 150 Hair / 250 Thin / 350 Light / 450 Regular … 950 Ultra).
-   Ships 151 glyphs (¥ drawn since VF17, 2026-09-30, since SUI's own price
-   formatting depends on it; VF18 refined G/K/R/f/g/t + yen; VF19 added –
-   (endash) plus outline refinement on e/eacute/egrave/ecircumflex/
-   edieresis/d/A/emdash/b/w/r/g/two/three; VF20 refined s further; VF21,
-   2026-10-02, widens every glyph's advance width by 5 units — UPM 1000,
-   so the font's own default spacing now reads roughly like
-   letter-spacing: 0.005em baked in, at the user's request; VF22-26
-   refine u/q/A/N/P/b/d/s/W/p outlines — no compatibility change): A–Z, a–z, 0–9 and basic
-   punctuation are complete, but £ ’ “ ” ; ! ? [ ] / & @ # % ↗ are not
-   drawn yet, so Garamond stays next in the stack and the browser falls
-   back per character. */
+   Ships 175 characters as of VF27 (2026-10-11): A–Z, a–z, 0–9, accents, ¥
+   (since VF17 — SUI's own price formatting depends on it), – (VF19) and,
+   new in VF27, 24 punctuation/symbols: ! " # & * + / ; < = > ? [ \ ] _ |
+   © « ® ° » ’ “ ” ™ — so these no longer fall through to Garamond. VF21
+   widened every advance by 5 units (≈ letter-spacing: 0.005em baked in).
+   Still not drawn: % @ ^ ~ { } £ § ¶ ¡ ¿ × ÷ ± • ‹ › ↗ and ß æ ø ð þ —
+   Garamond stays next in the stack and the browser falls back per
+   character. */
 @font-face {
     font-family: "Ango";
-    src: url("../font/Ango-VF26.woff2") format("woff2-variations");
+    src: url("../font/Ango-VF27.woff2") format("woff2-variations");
     font-weight: 150 950;
     font-style: normal;
     font-display: swap;

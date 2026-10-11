@@ -26,13 +26,12 @@
    this rule no longer fires for U+00A5 and could be dropped for it. Kept
    for U+FFE5 (the fullwidth twin), which Ango still doesn't draw, mapping
    it to the system gothic that sets the Japanese rather than falling
-   through to a serif Garamond ¥ against Ango digits. The rest of Ango's
-   gaps (’ “ ” ! ? & @ # % /) still fall through to Garamond, which is where
-   English punctuation belongs. If no local face matches, the stack behaves
-   exactly as before. VF18-21 refine outlines, add "endash", and widen
-   every glyph's advance width by 5 units (2026-10-02); none of them touch
-   U+00A5/U+FFE5. Verified with fontTools against
-   static/font/Ango-VF26.woff2. */
+   through to a serif Garamond ¥ against Ango digits. As of VF27
+   (2026-10-11) Ango also draws ’ “ ” ! ? & # / ; itself, so those no
+   longer fall through to Garamond; what is still missing (% @ ^ ~ £ and
+   the rarer symbols) still does. If no local face matches, the stack
+   behaves exactly as before. VF18-27 never touch U+00A5/U+FFE5. Verified
+   with fontTools against static/font/Ango-VF27.woff2. */
 @font-face {
 	font-family: "IIYen";
 	src: local("Hiragino Sans"), local("HiraginoSans-W3"), local("Hiragino Kaku Gothic ProN W3"),
@@ -55,7 +54,7 @@
 
 	/* Ango, held to a single weight: Thin 250 everywhere (2026-10-06).
 	   Both tokens stay so the scale can be split again by changing one line;
-	   they simply resolve to the same stop for now. Ango-VF26 names 250 "Thin"
+	   they simply resolve to the same stop for now. Ango-VF27 names 250 "Thin"
 	   on a wght axis of 150-950. */
 	--ii-thin: 250;
 	--ii-light: 250;
