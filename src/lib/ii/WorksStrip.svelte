@@ -83,7 +83,8 @@
 	let raf = 0;
 	let last = 0;
 	let ready = false;
-	let active = 0;
+	/** Starts outside the range so the first pass always lights something. */
+	let active = -1;
 
 	const wrap = (v) => (total > 0 ? ((v % total) + total) % total : 0);
 	/** The short way round, which is the only sensible reading of a difference
@@ -184,8 +185,15 @@
 			const lag = Math.max(-g.reach, Math.min(g.reach, -PARALLAX * (mid - half)));
 			if (pics[i]) pics[i].style.transform = `translate3d(${lag.toFixed(2)}px, 0, 0)`;
 		}
+		// The one on the centre line keeps its colour; the rest stand back into
+		// grey. Only done on a crossing, not every frame — the class is what
+		// the fade hangs off, and rewriting it sixty times a second would
+		// restart it sixty times a second.
 		const a = activeIndex();
-		if (a !== active) active = a;
+		if (a !== active) {
+			active = a;
+			for (let i = 0; i < pics.length; i++) pics[i]?.classList.toggle('lit', i === a);
+		}
 	}
 
 	function tick(ts) {
@@ -416,6 +424,19 @@
 		object-fit: cover;
 		user-select: none;
 		-webkit-user-drag: none;
+		filter: grayscale(1);
+		transition: filter 0.7s ease;
+	}
+	/* `lit` is put on from the script, and Svelte prunes a scoped selector it
+	   cannot see used in the markup — so this one is declared global. */
+	.frame :global(img.lit) {
+		filter: grayscale(0);
+	}
+
+	@media (prefers-reduced-motion: reduce) {
+		.frame img {
+			transition: none;
+		}
 	}
 
 	@media (prefers-reduced-motion: reduce) {
