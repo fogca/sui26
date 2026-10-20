@@ -1,7 +1,8 @@
 <script>
 	import { page } from '$app/stores';
 	import { fade } from 'svelte/transition';
-	import { afterNavigate } from '$app/navigation';
+	import { beforeNavigate, afterNavigate } from '$app/navigation';
+	import { onDestroy } from 'svelte';
 	import { browser } from '$app/environment';
 		import Tune from '$lib/ii/Tune.svelte';
 
@@ -71,6 +72,46 @@
 		if (nav.type === 'enter') return; // the first paint is the loader's own
 		rescanTypeSquare();
 	});
+
+	// ─── the page change ───────────────────────────────────────────────
+	// A navigation inside the app is usually instant, so the scrim is held for
+	// a moment of its own: without that it would be told to fade in and fade
+	// out in the same frame and nothing would be seen at all. COVER is how long
+	// it stays before lifting, counted from when it started drawing — a little
+	// past the 500ms it takes to draw, so it is fully down before it goes back
+	// up rather than turning round halfway.
+	const COVER = 520;
+	let veiled = false;
+	let veilAt = 0;
+	let veilTimer = 0;
+
+	beforeNavigate((nav) => {
+		if (!browser) return;
+		// Only a change of page inside the site: leaving it, or a link to the
+		// same path, has nothing to cover.
+		if (nav.type === 'leave' || !nav.to) return;
+		if (nav.to.url.pathname === nav.from?.url.pathname) return;
+		clearTimeout(veilTimer);
+		veiled = true;
+		veilAt = performance.now();
+	});
+
+	afterNavigate((nav) => {
+		if (!browser || !veiled) return;
+		if (nav.type === 'enter') {
+			veiled = false;
+			return;
+		}
+		clearTimeout(veilTimer);
+		veilTimer = setTimeout(
+			() => (veiled = false),
+			Math.max(0, COVER - (performance.now() - veilAt))
+		);
+	});
+
+	onDestroy(() => {
+		if (browser) clearTimeout(veilTimer);
+	});
 </script>
 
 <!-- Stylesheets and font loaders live in app.html so they start before first
@@ -84,13 +125,41 @@
 	{/key}
 {:else}
 	{#key $page.url.pathname}
-		<div class="ii" in:fade={{ duration: 1000 }}>
+		<div class="ii">
 			<slot />
 		</div>
 	{/key}
+
+	<!-- The page change, read off cathydolle.com (2026-10-20): a white scrim at
+	     nine tenths draws over the view and lifts off the next one. It sits
+	     under the chrome, so the header stays crisp across the change while
+	     everything below it is veiled, and it is translucent, so whatever is
+	     beneath keeps moving rather than being replaced by a blank card. -->
+	<div class="veil" class:on={veiled} aria-hidden="true"></div>
 {/if}
 
 <!-- outside .ii on purpose: the direction's type rules must not reach it -->
 {#if tuning}
 	<Tune />
 {/if}
+
+<style>
+	.veil {
+		position: fixed;
+		inset: 0;
+		/* over the page, under the chrome (10) and the opening (40) */
+		z-index: 9;
+		background: rgba(255, 255, 255, 0.9);
+		opacity: 0;
+		pointer-events: none;
+		transition: opacity 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+	}
+	.veil.on {
+		opacity: 1;
+	}
+	@media (prefers-reduced-motion: reduce) {
+		.veil {
+			transition: none;
+		}
+	}
+</style>

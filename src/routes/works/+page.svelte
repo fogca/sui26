@@ -7,6 +7,7 @@
 	// which is the direction's inner-page ground.
 	import { page } from '$app/stores';
 	import Band from '$lib/ii/Band.svelte';
+	import WorksStrip from '$lib/ii/WorksStrip.svelte';
 	import { chromeOverBand } from '$lib/ii/band.js';
 	import Chrome from '$lib/ii/Chrome.svelte';
 	import Foot from '$lib/ii/Foot.svelte';
@@ -67,18 +68,8 @@
 	<Chrome tone={overBand ? 'over' : 'ink'} />
 
 	<main class="ii-main">
-		<ul class="grid">
-			{#each items as w, i}
-				<li>
-					<div class="frame"><img src={w.image} alt={w.text} loading="lazy" /></div>
-					<div class="caption">
-						<span class="ii-label index" lang="en">{String(i + 1).padStart(2, '0')}</span>
-						<!-- credit names are Japanese source data in both languages -->
-						<span class="ii-jp" lang="ja">{w.text}</span>
-					</div>
-				</li>
-			{/each}
-		</ul>
+		<!-- the work itself, as one strip moving sideways under a fixed window -->
+		<WorksStrip {items} />
 	</main>
 
 	<Foot />
@@ -107,31 +98,6 @@
 		max-width: 348px;
 	}
 
-	.grid {
-		display: grid;
-		grid-template-columns: 1fr;
-		gap: 44px;
-		margin-top: 56px;
-	}
-	.frame {
-		aspect-ratio: 4 / 5;
-		overflow: hidden;
-		background: #eef2f3;
-	}
-	.frame img {
-		width: 100%;
-		height: 100%;
-		object-fit: cover;
-	}
-	.caption {
-		display: flex;
-		align-items: baseline;
-		gap: 10px;
-		margin-top: 12px;
-	}
-	.index {
-		flex: none;
-	}
 
 	@media screen and (min-width: 720px) {
 		h1 {
@@ -139,11 +105,6 @@
 		}
 		.lead {
 			max-width: 46ch;
-		}
-		.grid {
-			grid-template-columns: repeat(3, 1fr);
-			gap: 64px 3vw;
-			margin-top: 96px;
 		}
 	}
 </style>
