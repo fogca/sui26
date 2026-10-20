@@ -19,6 +19,8 @@
 	import {translator} from '$lib/i18n.js';
 	import { goto } from '$app/navigation';
 	import { onDestroy } from 'svelte';
+	import { fade } from 'svelte/transition';
+	import { cubicOut } from 'svelte/easing';
 
 	/** 'over' — white, on the field. 'ink' — for any surface that stays white. */
 	export let tone = 'over';
@@ -108,8 +110,11 @@
 
 {#if menuOpen}
 	<!-- above everything, including the opening and the page scrim -->
-	<div class="menu on-field">
-		<button class="ii-body close" type="button" on:click={closeMenu} lang="en">Close</button>
+	<div class="menu on-field" transition:fade={{ duration: 450, easing: cubicOut }}>
+		<button class="cross" type="button" on:click={closeMenu} aria-label="Close">
+			<span></span>
+			<span></span>
+		</button>
 		<nav class="sheet" lang="en">
 			{#each menuLinks as l}
 				<a
@@ -239,11 +244,28 @@
 		background: #394750;
 		padding: calc(21px + env(safe-area-inset-top)) 24px calc(24px + env(safe-area-inset-bottom));
 	}
-	.menu .close {
+	/* the opener's two rules, crossed */
+	.cross {
 		position: absolute;
-		top: calc(22px + env(safe-area-inset-top));
+		top: calc(18px + env(safe-area-inset-top));
 		right: 17px;
+		width: 30px;
+		height: 30px;
 		cursor: pointer;
+	}
+	.cross span {
+		position: absolute;
+		top: 50%;
+		left: 0;
+		width: 100%;
+		height: 1px;
+		background: currentColor;
+	}
+	.cross span:first-child {
+		transform: rotate(45deg);
+	}
+	.cross span:last-child {
+		transform: rotate(-45deg);
 	}
 	.sheet {
 		display: flex;
