@@ -1,7 +1,7 @@
 <script>
 	import { page } from '$app/stores';
 	import { fade } from 'svelte/transition';
-	import { beforeNavigate, afterNavigate } from '$app/navigation';
+	import { beforeNavigate, afterNavigate, goto } from '$app/navigation';
 	import { onDestroy } from 'svelte';
 	import { browser } from '$app/environment';
 		import Tune from '$lib/ii/Tune.svelte';
@@ -74,26 +74,45 @@
 	});
 
 	// ─── the page change ───────────────────────────────────────────────
-	// A navigation inside the app is usually instant, so the scrim is held for
-	// a moment of its own: without that it would be told to fade in and fade
-	// out in the same frame and nothing would be seen at all. COVER is how long
-	// it stays before lifting, counted from when it started drawing — a little
-	// past the 500ms it takes to draw, so it is fully down before it goes back
-	// up rather than turning round halfway.
-	const COVER = 520;
+	// The scrim has to be all the way down BEFORE the page swaps, or the next
+	// page is seen arriving through a half-drawn curtain and the whole thing
+	// reads as a fade-in after the fact. A navigation inside the app is
+	// instant, so the only way to order it is to hold the navigation up: the
+	// first one is cancelled, the scrim is drawn, and then the same navigation
+	// is made again — and that second one is let through.
+	//
+	// Back and forward are not cancelled. The URL has already moved by the time
+	// this runs, and cancelling would leave the history out of step with the
+	// page; those get the scrim without the hold.
+	const DRAW = 500; // matches the CSS below
 	let veiled = false;
-	let veilAt = 0;
+	let reissued = false;
 	let veilTimer = 0;
 
 	beforeNavigate((nav) => {
 		if (!browser) return;
-		// Only a change of page inside the site: leaving it, or a link to the
-		// same path, has nothing to cover.
 		if (nav.type === 'leave' || !nav.to) return;
 		if (nav.to.url.pathname === nav.from?.url.pathname) return;
-		clearTimeout(veilTimer);
+
+		// our own second attempt — let it go
+		if (reissued) {
+			reissued = false;
+			return;
+		}
+
+		if (nav.type === 'link' || nav.type === 'goto') {
+			const to = nav.to.url.href;
+			nav.cancel();
+			veiled = true;
+			clearTimeout(veilTimer);
+			veilTimer = setTimeout(() => {
+				reissued = true;
+				goto(to);
+			}, DRAW);
+			return;
+		}
+
 		veiled = true;
-		veilAt = performance.now();
 	});
 
 	afterNavigate((nav) => {
@@ -102,11 +121,13 @@
 			veiled = false;
 			return;
 		}
+		// Lift once the new page is under it. SvelteKit has already rendered it
+		// by the time this runs, so this is only long enough to be painted —
+		// and it is a timer rather than a pair of frames because frames stop in
+		// a tab nobody is looking at, and a scrim that never lifts is the one
+		// failure here that would be unrecoverable.
 		clearTimeout(veilTimer);
-		veilTimer = setTimeout(
-			() => (veiled = false),
-			Math.max(0, COVER - (performance.now() - veilAt))
-		);
+		veilTimer = setTimeout(() => (veiled = false), 60);
 	});
 
 	onDestroy(() => {

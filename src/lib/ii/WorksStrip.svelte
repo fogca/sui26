@@ -51,8 +51,9 @@
 	/** Wheel and drag are in different units; these bring both to px of travel. */
 	const WHEEL = 0.9;
 	const DRAG = 1.0;
-	/** Per-frame velocity decay, quoted at 60Hz. */
-	const DECAY = 0.92;
+	/** Per-frame velocity decay, quoted at 60Hz. 0.92 spent a throw in about
+	 *  half a second, which reads as a stop rather than a glide. */
+	const DECAY = 0.95;
 
 	let stage;
 	let track;
@@ -211,44 +212,99 @@
 	let dragging = false;
 	let pointerId = null;
 	let downX = 0;
+	let downY = 0;
 	let lastX = 0;
+	let lastY = 0;
 	let captured = false;
+	/** The axis the gesture settled on, decided once and then kept: letting it
+	 *  change mid-drag makes a diagonal swipe stutter between the two. */
+	let axis = 'x';
+	/** How far this gesture has carried the strip, and when — the throw is read
+	 *  off these rather than off the last event. */
+	let carried = 0;
+	let samples = [];
+	/** Only the last breath of the gesture counts towards the throw. */
+	const THROW_MS = 110;
+	const now = (e) => e.timeStamp || performance.now();
 
 	function onDown(e) {
 		if (reduced || e.button > 0) return;
 		pointerId = e.pointerId;
 		downX = lastX = e.clientX;
+		downY = lastY = e.clientY;
+		axis = 'x';
+		carried = 0;
+		samples = [{ p: 0, t: now(e) }];
 		dragging = true;
 		vel = 0;
 	}
 
 	function onMove(e) {
 		if (!dragging || e.pointerId !== pointerId) return;
-		const dx = e.clientX - lastX;
-		lastX = e.clientX;
+
 		// Capture only once the gesture is clearly a drag. Taking the pointer on
 		// down retargets the click to this element and kills the links.
-		if (!captured && Math.abs(e.clientX - downX) > 4) {
+		if (!captured) {
+			const ax = Math.abs(e.clientX - downX);
+			const ay = takeVertical ? Math.abs(e.clientY - downY) : 0;
+			if (Math.max(ax, ay) <= 3) return;
+			axis = ay > ax ? 'y' : 'x';
 			captured = true;
-			stage.setPointerCapture(pointerId);
+			// a pointer the browser no longer knows about throws here, and the
+			// drag is perfectly workable without the capture
+			try {
+				stage.setPointerCapture(pointerId);
+			} catch (err) {
+				/* carry on uncaptured */
+			}
+			// the step that crossed the threshold is the gesture's, not a jump
+			lastX = e.clientX;
+			lastY = e.clientY;
+			return;
 		}
-		if (!captured) return;
-		off = wrap(off - dx * DRAG);
-		vel = -dx * DRAG * 1.6;
+
+		// A finger moving left, or moving up, both carry the strip forward —
+		// the same direction a wheel does.
+		const d = axis === 'y' ? e.clientY - lastY : e.clientX - lastX;
+		lastX = e.clientX;
+		lastY = e.clientY;
+		carried += -d * DRAG;
+		off = wrap(off - d * DRAG);
+
+		const t = now(e);
+		samples.push({ p: carried, t });
+		while (samples.length > 2 && t - samples[0].t > THROW_MS) samples.shift();
 		place();
 	}
 
-	function onUp(e) {
+	function onUp() {
 		if (!dragging) return;
-		if (captured && stage.hasPointerCapture?.(pointerId)) stage.releasePointerCapture(pointerId);
+		try {
+			if (captured && stage.hasPointerCapture?.(pointerId)) stage.releasePointerCapture(pointerId);
+		} catch (err) {
+			/* already gone */
+		}
+		// The throw is how fast the finger was actually travelling over its last
+		// breath, not the size of the last event's step: steps arrive at the
+		// digitiser's rate, so their size measures that rate as much as the
+		// gesture, and a quick flick that ends on a small step would read as no
+		// throw at all.
+		if (captured && samples.length > 1) {
+			const a = samples[0];
+			const b = samples[samples.length - 1];
+			const ms = b.t - a.t;
+			// off advances by vel * 0.1 every 16.7ms, so vel is px/ms x 167
+			if (ms > 0) vel = ((b.p - a.p) / ms) * 167;
+		}
 		dragging = false;
 		captured = false;
 		pointerId = null;
+		samples = [];
 	}
 
-	/** A drag must not also open the link it finished on. */
+	/** A drag must not also open whatever it finished on. */
 	function onClick(e) {
-		if (Math.abs(e.clientX - downX) > 4) {
+		if (Math.abs(e.clientX - downX) > 3 || Math.abs(e.clientY - downY) > 3) {
 			e.preventDefault();
 			e.stopPropagation();
 		}
