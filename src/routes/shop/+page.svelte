@@ -2,8 +2,6 @@
 	// Fragrance — the catalogue, on the pale "breath" surface so ink type still
 	// reads over it. Each plate carries its own control: sold out, or add to
 	// bag, in the same place either way.
-	import Surface from '$lib/ii/Surface.svelte';
-	import { BREATH } from '$lib/ii/surface.js';
 	import Band from '$lib/ii/Band.svelte';
 	import { chromeOverBand } from '$lib/ii/band.js';
 	import Chrome from '$lib/ii/Chrome.svelte';
@@ -51,8 +49,6 @@
 <CartDrawer settings={data.settings} />
 
 <div class="ii-page shop-page">
-	<Surface study={BREATH} opacity={0.5} />
-
 	<!-- the water across the top half, with the title set over it in white -->
 	<Band>
 		<!-- English-only heading -->
@@ -121,6 +117,9 @@
 	   containing block */
 	.shop-page {
 		position: relative;
+		/* a flat ground under the band — the drifting pale field is gone from
+		   this page, so the only moving surface is the water across the top */
+		--ii-bg: #f6f6f6;
 	}
 	/* the catalogue starts below the band rather than under ii.css's own top
 	   padding — the title lives on the band now */

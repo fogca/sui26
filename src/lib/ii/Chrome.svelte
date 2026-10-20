@@ -85,6 +85,17 @@
 		justify-content: space-between;
 		padding: calc(21px + env(safe-area-inset-top)) 17px 0 24px;
 		color: #fff;
+		/* a step above the page's 250 */
+		font-weight: 350;
+	}
+	/* The runs inside carry .ii-body and .ii-micro, which ii.css gives an
+	   explicit weight — a declaration on the element itself, which an inherited
+	   value can never beat however specific the ancestor is. So they are named
+	   here as well, and the header sets as one. */
+	.chrome .tag,
+	.chrome .nav a,
+	.chrome .count {
+		font-weight: 350;
 	}
 	.chrome.ink {
 		color: var(--ii-ink);

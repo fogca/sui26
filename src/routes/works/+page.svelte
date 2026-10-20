@@ -6,8 +6,6 @@
 	// Here it runs the full deduped list on the About frame's pale surface,
 	// which is the direction's inner-page ground.
 	import { page } from '$app/stores';
-	import Surface from '$lib/ii/Surface.svelte';
-	import { BREATH } from '$lib/ii/surface.js';
 	import Band from '$lib/ii/Band.svelte';
 	import { chromeOverBand } from '$lib/ii/band.js';
 	import Chrome from '$lib/ii/Chrome.svelte';
@@ -50,8 +48,6 @@
 </svelte:head>
 
 <div class="ii-page works">
-	<Surface study={BREATH} />
-
 	<!-- the water across the top half, with the title set over it in white -->
 	<Band>
 		<!-- English-only heading -->
@@ -93,6 +89,9 @@
 	   containing block */
 	.works {
 		position: relative;
+		/* a flat ground under the band — the drifting pale field is gone from
+		   this page, so the only moving surface is the water across the top */
+		--ii-bg: #f6f6f6;
 	}
 	/* the grid starts below the band rather than under ii.css's own top padding */
 	.works .ii-main {
