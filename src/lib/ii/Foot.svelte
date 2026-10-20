@@ -17,7 +17,7 @@
 	$: legalLabel = both('shop.legal');
 </script>
 
-<footer class="foot">
+<footer class="foot on-field">
 	<nav class="top">
 		<a class="ii-body" href={'/contact'} lang="en">{t('nav.contact')}</a>
 	</nav>
@@ -43,7 +43,12 @@
 	.foot {
 		position: relative;
 		z-index: 1;
-		padding: 96px 21px calc(20px + env(safe-area-inset-bottom));
+		/* .on-field turns --ii-ink white on this very element, so the ground
+		   cannot ask for the ink by that name — this is ii.css's own value. The
+		   class is what carries the rest: white type, and rules and mutes that
+		   invert with it. */
+		background: #394750;
+		padding: 96px 21px calc(40px + env(safe-area-inset-bottom));
 	}
 	.top {
 		margin-bottom: 44px;
@@ -81,7 +86,7 @@
 
 	@media screen and (min-width: 720px) {
 		.foot {
-			padding: 140px 50px 30px;
+			padding: 140px 50px 56px;
 		}
 		.top {
 			margin-bottom: 56px;

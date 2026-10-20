@@ -37,7 +37,7 @@ const DICT = {
 	// There is no official English for 特定商取引法に基づく表記. "Legal notice" is
 	// what Shopify Japan uses for it and is what reads as a label; the Japanese
 	// is shown beside it, which is the wording the law is actually about.
-	'shop.legal': { ja: '特定商取引法に基づく表記', en: 'Legal notice' },
+	'shop.legal': { ja: '特定商取引法表記', en: 'Legal notice' },
 	'shop.addToCart': { ja: 'バッグに追加', en: 'Add to bag' },
 	'shop.soldOutNote': { ja: '売り切れ', en: 'Sold out' },
 	'shop.remaining': { ja: '残り{n}点', en: 'Only {n} left' },

@@ -24,6 +24,10 @@
 
 	/** [{ image, text }] — one frame each, in order. */
 	export let items = [];
+	/** Take a plain vertical wheel and a vertical swipe as travel too. Only
+	 *  true on a page that does not scroll: anywhere else it would trap the
+	 *  reader on a strip that never ends. */
+	export let takeVertical = false;
 
 	/** How far the picture lags its frame, as a fraction of the frame's
 	 *  displacement from the centre of the window. */
@@ -83,7 +87,7 @@
 		// the very axis it travels. Held at the reference's 1.08 and sized to
 		// whichever of the two limits binds first.
 		const BOX_ASPECT = 1.08;
-		const widest = vw * (vw < 720 ? 0.68 : 0.26);
+		const widest = vw * (vw < 720 ? 0.70 : 0.30);
 		boxW = Math.min(widest, stage.clientHeight * BOX_ASPECT);
 		boxH = Math.min(stage.clientHeight, boxW / BOX_ASPECT);
 
@@ -181,12 +185,16 @@
 
 	function onWheel(e) {
 		if (reduced) return;
-		// A trackpad's sideways swipe, and shift+wheel, which the browser
-		// already reports as deltaX. A plain vertical wheel is left to the page:
-		// the strip wraps, so taking it would trap the reader on this section.
-		if (Math.abs(e.deltaX) <= Math.abs(e.deltaY)) return;
+		// A trackpad's sideways swipe, and shift+wheel, which the browser already
+		// reports as deltaX. A plain vertical wheel is only taken where the page
+		// has nothing to scroll to — the strip wraps, so taking it on a page that
+		// scrolls would trap the reader on a section that never ends.
+		const sideways = Math.abs(e.deltaX) > Math.abs(e.deltaY);
+		if (!sideways && !takeVertical) return;
+		const d = sideways ? e.deltaX : e.deltaY;
+		if (!d) return;
 		e.preventDefault();
-		vel += e.deltaX * WHEEL;
+		vel += d * WHEEL;
 	}
 
 	let dragging = false;
@@ -271,6 +279,7 @@
 <div
 	class="stage"
 	class:is-ready={ready}
+	style="--strip-touch:{takeVertical ? 'none' : 'pan-y'}"
 	bind:this={stage}
 	on:wheel={onWheel}
 	on:pointerdown={onDown}
@@ -293,14 +302,13 @@
 
 <style>
 	.stage {
-		position: relative;
-		width: 100vw;
-		margin-left: calc(-1 * var(--ii-gutter));
-		height: 44vh;
+		/* fills whatever box the page gives it; the frames sit on its centre
+		   line, so Y-centring is the page's to decide */
+		position: absolute;
+		inset: 0;
 		overflow: hidden;
 		cursor: grab;
-		/* the page keeps its own vertical scroll; sideways is ours */
-		touch-action: pan-y;
+		touch-action: var(--strip-touch, pan-y);
 		opacity: 0;
 		transition: opacity 0.8s ease;
 	}
@@ -338,10 +346,12 @@
 		-webkit-user-drag: none;
 	}
 
+	/* the one on the centre line, named — opposite the page's own title, which
+	   sits in the other corner */
 	.name {
 		position: absolute;
-		left: var(--ii-gutter);
-		bottom: 0;
+		right: var(--ii-gutter);
+		bottom: calc(24px + env(safe-area-inset-bottom));
 		margin: 0;
 	}
 
