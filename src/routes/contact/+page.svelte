@@ -2,11 +2,12 @@
 	// Contact — a new public page in the "II" direction, lifted from the
 	// prototype at /ii/contact and made bilingual.
 	//
-	// The form has no backend: it composes the same mail draft the site already
-	// sends people to, with the fields filled in. Wiring it to Resend is a
-	// separate decision. Subject line and body labels follow the reader's
-	// language; the copy itself is the studio's existing contact text in
-	// i18n.js, not new writing.
+	// The form posts to /contact, which sends through Resend. Until the key for
+	// that is set the endpoint answers 503, and this falls back to composing
+	// the mail draft the site has always opened — so the form works either way
+	// and needs no change when the key arrives. Subject line and body labels
+	// follow the reader's language; the copy itself is the studio's existing
+	// contact text in i18n.js, not new writing.
 	import { page } from '$app/stores';
 	import Surface from '$lib/ii/Surface.svelte';
 	import { BREATH } from '$lib/ii/surface.js';
@@ -27,6 +28,11 @@
 	let email = '';
 	let subjectKey = SUBJECT_KEYS[0];
 	let message = '';
+	/** A field no person can see. Anything that fills it in is not a person. */
+	let website = '';
+
+	/** idle | sending | sent | failed */
+	let state = 'idle';
 
 	$: t = translator(data.lang);
 	$: lead = both('contact.lead');
@@ -36,27 +42,50 @@
 	// the Latin body size. Applied with class: directives rather than an
 	// interpolated string so Svelte's scoped-CSS analysis can still see them.
 
-	function send() {
-		// the draft is addressed to the studio, who read Japanese, so its
-		// labels and punctuation are Japanese whatever the reader was shown
-		const sep = '：';
-		const divider = '｜';
-		const subjectLabel = both('contact.subject.' + subjectKey).ja;
-
+	/** The draft this used to open on its own, kept as the way out when the
+	 *  server cannot send for us. Addressed to the studio, who read Japanese,
+	 *  so its labels are Japanese whatever the reader was shown. */
+	function openDraft(subjectLabel) {
 		const body = [
-			`${t('contact.name')}${sep}${name}`,
-			`${t('contact.email')}${sep}${email}`,
-			`${t('contact.subject')}${sep}${subjectLabel}`,
+			`${t('contact.name')}：${name}`,
+			`${t('contact.email')}：${email}`,
+			`${t('contact.subject')}：${subjectLabel}`,
 			'',
 			message
 		].join('\n');
-
-		const href =
+		window.location.href =
 			`mailto:${TO}?subject=` +
-			encodeURIComponent(`${t('common.siteName')}${divider}${subjectLabel}`) +
+			encodeURIComponent(`${t('common.siteName')}｜${subjectLabel}`) +
 			'&body=' +
 			encodeURIComponent(body);
-		window.location.href = href;
+	}
+
+	async function send() {
+		if (state === 'sending') return;
+		const subjectLabel = both('contact.subject.' + subjectKey).ja;
+		state = 'sending';
+		try {
+			const res = await fetch('/contact', {
+				method: 'POST',
+				headers: { 'content-type': 'application/json' },
+				body: JSON.stringify({ name, email, subject: subjectLabel, message, website })
+			});
+			if (res.ok) {
+				state = 'sent';
+				name = email = message = '';
+				subjectKey = SUBJECT_KEYS[0];
+				return;
+			}
+			// nothing is wired up yet — hand it to their mail client instead
+			if (res.status === 503) {
+				state = 'idle';
+				openDraft(subjectLabel);
+				return;
+			}
+			state = 'failed';
+		} catch (err) {
+			state = 'failed';
+		}
 	}
 </script>
 
@@ -103,7 +132,20 @@
 				<textarea rows="5" bind:value={message} required></textarea>
 			</label>
 
-			<button class="ii-btn send" type="submit" lang={data.lang}>{t('contact.send')}</button>
+			<!-- the honeypot: off screen, not announced, never tabbed into -->
+			<label class="trap" aria-hidden="true">
+				<input type="text" bind:value={website} tabindex="-1" autocomplete="off" />
+			</label>
+
+			<button class="ii-btn send" type="submit" lang={data.lang} disabled={state === 'sending'}>
+				{state === 'sending' ? t('contact.sending') : t('contact.send')}
+			</button>
+
+			{#if state === 'sent' || state === 'failed'}
+				<p class="ii-body result" class:bad={state === 'failed'} lang={data.lang} role="status">
+					{state === 'sent' ? t('contact.sent') : t('contact.failed')}
+				</p>
+			{/if}
 
 			<p class="ii-mute note ii-jp" lang={data.lang}>
 				{t('contact.note')}
@@ -115,6 +157,24 @@
 </div>
 
 <style>
+	.trap {
+		position: absolute;
+		left: -9999px;
+		width: 1px;
+		height: 1px;
+		overflow: hidden;
+	}
+	.result {
+		margin-top: 18px;
+	}
+	.result.bad {
+		color: var(--ii-alert);
+	}
+	.send[disabled] {
+		opacity: 0.55;
+		cursor: default;
+	}
+
 	h1 {
 		margin-bottom: 49px;
 	}

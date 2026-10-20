@@ -105,6 +105,15 @@ const DICT = {
 	'contact.subject': { ja: 'ご用件', en: 'Subject' },
 	'contact.message': { ja: 'メッセージ', en: 'Message' },
 	'contact.send': { ja: '送信する', en: 'Send' },
+	'contact.sending': { ja: '送信中…', en: 'Sending…' },
+	'contact.sent': {
+		ja: 'ありがとうございます。お返事までしばらくお待ちください。',
+		en: 'Thank you — we will write back before long.'
+	},
+	'contact.failed': {
+		ja: '送信できませんでした。お手数ですが、もう一度お試しください。',
+		en: 'That did not send. Please try once more.'
+	},
 	'contact.note': {
 		ja: 'お使いのメールソフトが開き、内容が下書きとして入ります。',
 		en: 'Your mail client opens with the message filled in as a draft.'

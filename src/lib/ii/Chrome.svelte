@@ -18,6 +18,7 @@
 	import { cart, cartOpen, cartDrawerMounted } from '$lib/shop/cart.js';
 	import {translator} from '$lib/i18n.js';
 	import { goto } from '$app/navigation';
+	import { onDestroy } from 'svelte';
 
 	/** 'over' — white, on the field. 'ink' — for any surface that stays white. */
 	export let tone = 'over';
@@ -49,6 +50,31 @@
 		if ($cartDrawerMounted) cartOpen.set(true);
 		else goto('/shop');
 	}
+
+	// ─── the menu ──────────────────────────────────────────────────────
+	// Three links and a bag fit across a phone, but only barely — 178px of a
+	// 375 screen at 11px. On a phone they fold into one word instead, and the
+	// panel that opens is where Contact lives too: the foot is the only other
+	// place it appears, and Top and Works have no foot.
+	let menuOpen = false;
+
+	$: menuLinks = [...links, { label: t('nav.contact'), href: '/contact' }];
+
+	function openMenu() {
+		menuOpen = true;
+		document.body.style.overflow = 'hidden';
+	}
+	function closeMenu() {
+		menuOpen = false;
+		document.body.style.overflow = '';
+	}
+	function onKey(e) {
+		if (e.key === 'Escape' && menuOpen) closeMenu();
+	}
+
+	onDestroy(() => {
+		if (typeof document !== 'undefined') document.body.style.overflow = '';
+	});
 </script>
 
 <header class="chrome" class:ink={!pale}>
@@ -61,14 +87,39 @@
 
 	<nav class="nav" lang="en">
 		{#each links as l}
-			<a class="ii-body" class:current={$page.url.pathname === l.href} href={l.href}>{l.label}</a>
+			<a
+				class="ii-body wide"
+				class:current={$page.url.pathname === l.href}
+				href={l.href}>{l.label}</a
+			>
 		{/each}
+		<button class="ii-body narrow" type="button" on:click={openMenu} lang="en">Menu</button>
 		<button class="cart" type="button" on:click={openCart} aria-label={t('shop.openCart')}>
 			<span class="glyph" aria-hidden="true"></span>
 			{#if count > 0}<span class="ii-micro count">{count}</span>{/if}
 		</button>
 	</nav>
 </header>
+
+<svelte:window on:keydown={onKey} />
+
+{#if menuOpen}
+	<!-- above everything, including the opening and the page scrim -->
+	<div class="menu on-field">
+		<button class="ii-body close" type="button" on:click={closeMenu} lang="en">Close</button>
+		<nav class="sheet" lang="en">
+			{#each menuLinks as l}
+				<a
+					class="ii-display"
+					class:current={$page.url.pathname === l.href}
+					href={l.href}
+					on:click={closeMenu}>{l.label}</a
+				>
+			{/each}
+		</nav>
+		<span class="ii-body sign" lang="en">scent studio</span>
+	</div>
+{/if}
 
 <style>
 	.chrome {
@@ -94,6 +145,7 @@
 	   here as well, and the header sets as one. */
 	.chrome .tag,
 	.chrome .nav a,
+	.chrome .nav button,
 	.chrome .count {
 		font-weight: 350;
 	}
@@ -153,7 +205,53 @@
 		font-size: 9px;
 	}
 
+	/* one word on a phone, the three links on anything wider */
+	.wide {
+		display: none;
+	}
+	.narrow {
+		cursor: pointer;
+	}
+
+	.menu {
+		position: fixed;
+		inset: 0;
+		z-index: 60;
+		display: flex;
+		flex-direction: column;
+		justify-content: center;
+		/* .on-field turns --ii-ink white on this element, so the ground cannot
+		   ask for it by name — ii.css's own value */
+		background: #394750;
+		padding: calc(21px + env(safe-area-inset-top)) 24px calc(24px + env(safe-area-inset-bottom));
+	}
+	.menu .close {
+		position: absolute;
+		top: calc(22px + env(safe-area-inset-top));
+		right: 17px;
+		cursor: pointer;
+	}
+	.sheet {
+		display: flex;
+		flex-direction: column;
+		gap: 18px;
+	}
+	.sheet a.current {
+		opacity: 0.55;
+	}
+	.menu .sign {
+		position: absolute;
+		left: 24px;
+		bottom: calc(24px + env(safe-area-inset-bottom));
+	}
+
 	@media screen and (min-width: 720px) {
+		.wide {
+			display: inline;
+		}
+		.narrow {
+			display: none;
+		}
 		.chrome {
 			padding: 40px 50px;
 		}
