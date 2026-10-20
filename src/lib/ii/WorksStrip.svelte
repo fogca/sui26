@@ -28,6 +28,12 @@
 	 *  true on a page that does not scroll: anywhere else it would trap the
 	 *  reader on a strip that never ends. */
 	export let takeVertical = false;
+	/** The one on the centre line. Bound out: the page sets it where its own
+	 *  line is, rather than the strip carrying a second line of its own. */
+	export let name = '';
+	/** False until the strip has actually been moved, which is what tells the
+	 *  page to give its line over to the name. */
+	export let moved = false;
 
 	/** How far the picture lags its frame, as a fraction of the frame's
 	 *  displacement from the centre of the window. */
@@ -207,6 +213,7 @@
 		if (!d) return;
 		e.preventDefault();
 		vel += d * WHEEL;
+		moved = true;
 	}
 
 	let dragging = false;
@@ -270,6 +277,7 @@
 		lastY = e.clientY;
 		carried += -d * DRAG;
 		off = wrap(off - d * DRAG);
+		moved = true;
 
 		const t = now(e);
 		samples.push({ p: carried, t });
@@ -362,9 +370,6 @@
 			</figure>
 		{/each}
 	</div>
-
-	<!-- the one on the centre line, named -->
-	<p class="name ii-jp" lang="ja" aria-live="off">{name}</p>
 </div>
 
 <style>
@@ -411,15 +416,6 @@
 		object-fit: cover;
 		user-select: none;
 		-webkit-user-drag: none;
-	}
-
-	/* the one on the centre line, named — opposite the page's own title, which
-	   sits in the other corner */
-	.name {
-		position: absolute;
-		right: var(--ii-gutter);
-		bottom: calc(24px + env(safe-area-inset-bottom));
-		margin: 0;
 	}
 
 	@media (prefers-reduced-motion: reduce) {
