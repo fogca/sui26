@@ -93,7 +93,10 @@
 				href={l.href}>{l.label}</a
 			>
 		{/each}
-		<button class="ii-body narrow" type="button" on:click={openMenu} lang="en">Menu</button>
+		<button class="bars narrow" type="button" on:click={openMenu} aria-label="Menu">
+			<span></span>
+			<span></span>
+		</button>
 		<button class="cart" type="button" on:click={openCart} aria-label={t('shop.openCart')}>
 			<span class="glyph" aria-hidden="true"></span>
 			{#if count > 0}<span class="ii-micro count">{count}</span>{/if}
@@ -205,12 +208,23 @@
 		font-size: 9px;
 	}
 
-	/* one word on a phone, the three links on anything wider */
+	/* two rules on a phone, the three links on anything wider */
 	.wide {
 		display: none;
 	}
-	.narrow {
+	.bars {
+		display: flex;
+		flex-direction: column;
+		gap: 8px;
+		width: 30px;
 		cursor: pointer;
+	}
+	.bars span {
+		display: block;
+		width: 100%;
+		/* a hairline, like every other rule on the site */
+		height: 1px;
+		background: currentColor;
 	}
 
 	.menu {
@@ -249,7 +263,7 @@
 		.wide {
 			display: inline;
 		}
-		.narrow {
+		.bars.narrow {
 			display: none;
 		}
 		.chrome {
