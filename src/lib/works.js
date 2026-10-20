@@ -4,18 +4,23 @@
 // rather than from naturalWidth, so the frames are the right shape before a
 // single picture has decoded — a strip that wraps cannot wait on loading to
 // know how wide its own frames are.
+//
+// WebP, capped at 1800px on the long edge: 6.19 MB of JPEG became 0.48 MB.
+// The strip's box is about a quarter of the viewport, so the largest a frame
+// is ever drawn is ~1330px on a 2560 screen at 2x — one of these files was
+// 6000px tall. The originals are kept; /log still reads some of them.
 export const works = [
-	{ image: '/images/hanaori_1.jpg', w: 1080, h: 1618, text: '森岡書店' },
-	{ image: '/images/senn15.jpg', w: 450, h: 600, text: 'SENN' },
-	{ image: '/images/senn7.jpg', w: 800, h: 1000, text: 'SENN' },
-	{ image: '/images/hermes.jpg', w: 1200, h: 802, text: 'HERMES skills academy' },
-	{ image: '/images/lanuit.jpg.webp', w: 1350, h: 1350, text: 'La Nuit' },
-	{ image: '/images/moriokasyoten2023.jpg', w: 3596, h: 5394, text: '森岡書店' },
-	{ image: '/images/MIM.jpeg', w: 2784, h: 1440, text: 'MIM' },
-	{ image: '/images/roka.jpg', w: 1179, h: 1179, text: '直島旅館ろ霞' },
-	{ image: '/images/MARUYOHOTEL.jpg', w: 1365, h: 2048, text: 'MARUYO HOTEL' },
-	{ image: '/images/happymouth.jpg', w: 4000, h: 6000, text: 'Happy mouth' },
-	{ image: '/images/sari.jpg', w: 863, h: 1280, text: 'SUI scent by Sari' }
+	{ image: '/images/hanaori_1.webp', w: 1080, h: 1618, text: '森岡書店' },
+	{ image: '/images/senn15.webp', w: 450, h: 600, text: 'SENN' },
+	{ image: '/images/senn7.webp', w: 800, h: 1000, text: 'SENN' },
+	{ image: '/images/hermes.webp', w: 1200, h: 802, text: 'HERMES skills academy' },
+	{ image: '/images/lanuit.webp', w: 1350, h: 1350, text: 'La Nuit' },
+	{ image: '/images/moriokasyoten2023.webp', w: 1200, h: 1800, text: '森岡書店' },
+	{ image: '/images/MIM.webp', w: 1800, h: 931, text: 'MIM' },
+	{ image: '/images/roka.webp', w: 1179, h: 1179, text: '直島旅館ろ霞' },
+	{ image: '/images/MARUYOHOTEL.webp', w: 1200, h: 1800, text: 'MARUYO HOTEL' },
+	{ image: '/images/happymouth.webp', w: 1200, h: 1800, text: 'Happy mouth' },
+	{ image: '/images/sari.webp', w: 863, h: 1280, text: 'SUI scent by Sari' }
 ];
 
 const CONTACT_TO = 'hello@sari-scent.jp';
