@@ -37,7 +37,17 @@
 	const REACH = 0.06;
 	/** Between frames. The reference sets them edge to edge; a little air lets
 	 *  each picture read on its own. */
-	const GAP = 28;
+	const GAP = 16;
+	/** A size of its own for each frame in turn.
+	 *
+	 *  Fitting alone cannot make a strip ragged: whichever side of a picture
+	 *  binds first gets pinned to the edge of the box, so a catalogue that is
+	 *  mostly portraits comes out with nearly every frame at exactly the box's
+	 *  height — measured here, six of nine sat on the same 347px. Giving each
+	 *  frame its own share of the box breaks that, and it is a fixed sequence
+	 *  rather than a random one so the strip is the same on every load and the
+	 *  server renders what the client does. */
+	const SCALES = [1, 0.7, 0.92, 0.58, 1, 0.76, 0.86, 0.64, 0.96];
 	/** Wheel and drag are in different units; these bring both to px of travel. */
 	const WHEEL = 0.9;
 	const DRAG = 1.0;
@@ -94,10 +104,11 @@
 		// The fit is solved from the files' own sizes, which the data carries, so
 		// none of this waits on a picture to decode — and in a strip that wraps,
 		// most frames are off screen most of the time.
-		const fit = (src) => {
+		const fit = (src, i) => {
 			const nw = src.w || 4;
 			const nh = src.h || 5;
-			const k = Math.min(boxW / nw, boxH / nh);
+			const share = SCALES[i % SCALES.length];
+			const k = Math.min((boxW * share) / nw, (boxH * share) / nh);
 			return { w: Math.round(nw * k), h: Math.round(nh * k) };
 		};
 
@@ -106,7 +117,7 @@
 		// is only the widest a frame may be, and a run of portraits comes out
 		// far narrower than it, which is exactly when a hole would open on the
 		// way round.
-		const unit = items.reduce((sum, it) => sum + fit(it).w + GAP, 0);
+		const unit = items.reduce((sum, it, i) => sum + fit(it, i).w + GAP, 0);
 		const copies = Math.max(1, Math.ceil((vw * 2) / Math.max(1, unit)));
 		if (copies * items.length !== run.length) {
 			const next = [];
@@ -120,7 +131,7 @@
 
 		let x = 0;
 		geo = frames.map((f, i) => {
-			const { w, h } = fit(run[i] || {});
+			const { w, h } = fit(run[i] || {}, i);
 			const g = { w, h, left: x, reach: REACH * w };
 			x += w + GAP;
 			return g;
