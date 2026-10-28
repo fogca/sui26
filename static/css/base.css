@@ -69,7 +69,7 @@ html, body {
 --------------------------------------------------------------------------- */
 /* Ango (formerly Elio — renamed 2026-10-03) — August Type Foundry's own variable face (2 masters, wght 150–950;
    named stops 150 Hair / 250 Thin / 350 Light / 450 Regular … 950 Ultra).
-   Ships 175 characters as of VF28 (2026-10-12; VF28 only refines outlines): A–Z, a–z, 0–9, accents, ¥
+   Ships 175 characters as of VF31 (2026-10-28; VF28-31 only refine outlines and fix Q's interpolation): A–Z, a–z, 0–9, accents, ¥
    (since VF17 — SUI's own price formatting depends on it), – (VF19) and,
    new in VF27, 24 punctuation/symbols: ! " # & * + / ; < = > ? [ \ ] _ |
    © « ® ° » ’ “ ” ™ — so these no longer fall through to Garamond. VF21
@@ -79,7 +79,7 @@ html, body {
    character. */
 @font-face {
     font-family: "Ango";
-    src: url("../font/Ango-VF28.woff2") format("woff2-variations");
+    src: url("../font/Ango-VF31.woff2") format("woff2-variations");
     font-weight: 150 950;
     font-style: normal;
     font-display: swap;
